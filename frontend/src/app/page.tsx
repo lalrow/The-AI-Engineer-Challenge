@@ -101,7 +101,7 @@ export default function Home() {
         setChatResponse('No content received from the stream.');
       }
     } catch (error) {
-      if ((error as any)?.name === 'AbortError') {
+      if (error instanceof Error && error.name === 'AbortError') {
         setChatResponse('Request timed out. Please try again or provide a valid API key.');
       } else {
         setChatResponse(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
