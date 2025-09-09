@@ -19,6 +19,7 @@ export default function Home() {
   const [userMessage, setUserMessage] = useState('');
   const [chatResponse, setChatResponse] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [apiKey, setApiKey] = useState('');
 
   const checkHealth = async () => {
     setApiStatus('checking');
@@ -44,6 +45,11 @@ export default function Home() {
       return;
     }
 
+    if (!apiKey.trim()) {
+      alert('Please enter your OpenAI API key');
+      return;
+    }
+
     setIsLoading(true);
     setChatResponse('Sending request...');
 
@@ -52,7 +58,7 @@ export default function Home() {
         developer_message: "You are a helpful AI assistant.",
         user_message: userMessage,
         model: "gpt-4.1-mini",
-        api_key: "test-key" // This will fail without a real key, but shows the structure
+        api_key: apiKey
       };
 
       const controller = new AbortController();
@@ -201,22 +207,39 @@ export default function Home() {
             </h2>
             
             <div className="space-y-4">
-              <div className="flex gap-4">
-                <input
-                  type="text"
-                  value={userMessage}
-                  onChange={(e) => setUserMessage(e.target.value)}
-                  placeholder="Enter your message..."
-                  className="flex-1 px-4 py-3 rounded-full border-0 bg-white/20 text-white placeholder-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  onKeyPress={(e) => e.key === 'Enter' && testChat()}
-                />
-                <button
-                  onClick={testChat}
-                  disabled={isLoading}
-                  className="px-6 py-3 bg-green-500 hover:bg-green-600 disabled:bg-gray-500 rounded-full font-medium transition-colors"
-                >
-                  {isLoading ? 'Sending...' : 'Send Message'}
-                </button>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-blue-100 mb-2">
+                    OpenAI API Key
+                  </label>
+                  <input
+                    type="password"
+                    value={apiKey}
+                    onChange={(e) => setApiKey(e.target.value)}
+                    placeholder="sk-..."
+                    className="w-full px-4 py-3 rounded-full border-0 bg-white/20 text-white placeholder-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  />
+                  <p className="text-xs text-blue-200 mt-1">
+                    Get your API key from <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" className="text-yellow-400 hover:text-yellow-300 underline">OpenAI Platform</a>
+                  </p>
+                </div>
+                <div className="flex gap-4">
+                  <input
+                    type="text"
+                    value={userMessage}
+                    onChange={(e) => setUserMessage(e.target.value)}
+                    placeholder="Enter your message..."
+                    className="flex-1 px-4 py-3 rounded-full border-0 bg-white/20 text-white placeholder-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    onKeyPress={(e) => e.key === 'Enter' && testChat()}
+                  />
+                  <button
+                    onClick={testChat}
+                    disabled={isLoading}
+                    className="px-6 py-3 bg-green-500 hover:bg-green-600 disabled:bg-gray-500 rounded-full font-medium transition-colors"
+                  >
+                    {isLoading ? 'Sending...' : 'Send Message'}
+                  </button>
+                </div>
               </div>
 
               {chatResponse && (
