@@ -55,32 +55,57 @@ export default function Home() {
         api_key: "test-key" // This will fail without a real key, but shows the structure
       };
 
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
+
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(requestBody)
+        body: JSON.stringify(requestBody),
+        signal: controller.signal,
       });
 
-      if (response.ok) {
-        const reader = response.body?.getReader();
-        if (reader) {
-          const decoder = new TextDecoder();
-          let result = '';
+      clearTimeout(timeoutId);
 
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-            result += decoder.decode(value);
-            setChatResponse(result);
-          }
+      if (!response.ok) {
+        const maybeText = await response.text().catch(() => '');
+        if (response.status === 401) {
+          setChatResponse('Error: 401 Unauthorized - Your OpenAI API key is invalid or missing.');
+        } else {
+          setChatResponse(`Error: HTTP ${response.status}${maybeText ? ` - ${maybeText}` : ''}`);
         }
-      } else {
-        setChatResponse(`Error: HTTP ${response.status} - ${await response.text()}`);
+        return;
+      }
+
+      // If there's no body (no stream), fall back to reading text
+      if (!response.body) {
+        const text = await response.text().catch(() => '');
+        setChatResponse(text || 'No response body received from server.');
+        return;
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let result = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        result += decoder.decode(value);
+        setChatResponse(result);
+      }
+
+      if (!result) {
+        setChatResponse('No content received from the stream.');
       }
     } catch (error) {
-      setChatResponse(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      if ((error as any)?.name === 'AbortError') {
+        setChatResponse('Request timed out. Please try again or provide a valid API key.');
+      } else {
+        setChatResponse(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
     } finally {
       setIsLoading(false);
     }
