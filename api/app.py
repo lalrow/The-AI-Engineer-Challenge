@@ -7,15 +7,36 @@ from pydantic import BaseModel
 from openai import OpenAI
 import os
 import time
+import json
 from typing import Optional
 from fastapi.responses import StreamingResponse
 
 # Initialize FastAPI application with a title
 app = FastAPI(title="OpenAI Chat API")
 
-# Simple in-memory storage for user conversations
-# In production, you'd use a database like PostgreSQL, MongoDB, or Redis
-user_conversations = {}
+# File-based storage for user conversations (persists across serverless function calls)
+CONVERSATIONS_FILE = "/tmp/conversations.json"
+
+def load_conversations():
+    """Load conversations from file"""
+    try:
+        if os.path.exists(CONVERSATIONS_FILE):
+            with open(CONVERSATIONS_FILE, 'r') as f:
+                return json.load(f)
+    except Exception:
+        pass
+    return {}
+
+def save_conversations(conversations):
+    """Save conversations to file"""
+    try:
+        with open(CONVERSATIONS_FILE, 'w') as f:
+            json.dump(conversations, f)
+    except Exception:
+        pass
+
+# Load existing conversations
+user_conversations = load_conversations()
 
 # Configure CORS (Cross-Origin Resource Sharing) middleware
 # This allows the API to be accessed from different domains/origins
@@ -43,6 +64,9 @@ async def chat(request: ChatRequest):
         # Initialize OpenAI client with the provided API key
         client = OpenAI(api_key=request.api_key)
         
+        # Load fresh conversations (in case another function instance updated them)
+        user_conversations = load_conversations()
+        
         # Get or create conversation history for this user
         if request.user_id not in user_conversations:
             user_conversations[request.user_id] = []
@@ -53,6 +77,9 @@ async def chat(request: ChatRequest):
             "content": request.user_message,
             "timestamp": str(time.time())
         })
+        
+        # Save conversations immediately
+        save_conversations(user_conversations)
         
         # Prepare messages for OpenAI (system + conversation history)
         messages = [{"role": "system", "content": request.developer_message}]
@@ -83,6 +110,9 @@ async def chat(request: ChatRequest):
                 "content": full_response,
                 "timestamp": str(time.time())
             })
+            
+            # Save conversations after AI response
+            save_conversations(user_conversations)
 
         # Return a streaming response to the client
         return StreamingResponse(generate(), media_type="text/plain")
@@ -99,13 +129,16 @@ async def health_check():
 # Get user conversation history
 @app.get("/api/conversations/{user_id}")
 async def get_conversations(user_id: str):
-    if user_id not in user_conversations:
+    # Load fresh conversations
+    conversations = load_conversations()
+    
+    if user_id not in conversations:
         return {"conversations": [], "message": "No conversations found for this user"}
     
     return {
         "user_id": user_id,
-        "conversations": user_conversations[user_id],
-        "total_messages": len(user_conversations[user_id])
+        "conversations": conversations[user_id],
+        "total_messages": len(conversations[user_id])
     }
 
 # Entry point for running the application directly
