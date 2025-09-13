@@ -7,6 +7,7 @@ interface ChatRequest {
   user_message: string;
   model: string;
   api_key: string;
+  user_id: string;
 }
 
 interface HealthResponse {
@@ -20,6 +21,17 @@ export default function Home() {
   const [chatResponse, setChatResponse] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [apiKey, setApiKey] = useState('');
+  const [userId, setUserId] = useState<string>('');
+
+  // Generate or retrieve user ID on component mount
+  useEffect(() => {
+    let storedUserId = localStorage.getItem('ai-chat-user-id');
+    if (!storedUserId) {
+      storedUserId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+      localStorage.setItem('ai-chat-user-id', storedUserId);
+    }
+    setUserId(storedUserId);
+  }, []);
 
   const checkHealth = async () => {
     setApiStatus('checking');
@@ -58,7 +70,8 @@ export default function Home() {
         developer_message: "You are a helpful AI assistant.",
         user_message: userMessage,
         model: "gpt-4.1-mini",
-        api_key: apiKey
+        api_key: apiKey,
+        user_id: userId
       };
 
       const controller = new AbortController();
@@ -208,6 +221,17 @@ export default function Home() {
             
             <div className="space-y-4">
               <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-blue-100 mb-2">
+                    Your User ID
+                  </label>
+                  <div className="px-4 py-3 rounded-full bg-white/20 border border-white/30 text-white/80 font-mono text-sm">
+                    {userId || 'Generating...'}
+                  </div>
+                  <p className="text-xs text-blue-200 mt-1">
+                    This ID persists across sessions to track your conversations
+                  </p>
+                </div>
                 <div>
                   <label className="block text-sm font-medium text-blue-100 mb-2">
                     OpenAI API Key

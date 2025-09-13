@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧠 Smart Routing Explained</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2d3748;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #4a5568;
+            margin-top: 30px;
+        }
+        h3 {
+            color: #667eea;
+        }
+        .emoji {
+            font-size: 1.2em;
+        }
+        code {
+            background: #f7fafc;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+        pre {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 10px;
+            overflow-x: auto;
+        }
+        .highlight {
+            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .example {
+            background: #f0fff4;
+            border-left: 4px solid #48bb78;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+        .flow-diagram {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: monospace;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .config-box {
+            background: #f7fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .route-rule {
+            background: #fff5f5;
+            border-left: 4px solid #f56565;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .route-rule.api {
+            background: #f0fff4;
+            border-left-color: #48bb78;
+        }
+        .route-rule.frontend {
+            background: #ebf8ff;
+            border-left-color: #4299e1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><span class="emoji">🧠</span> Smart Routing Explained</h1>
+        
+        <div class="highlight">
+            <h2>What is Smart Routing?</h2>
+            <p>Smart routing is a <strong>traffic distribution system</strong> that automatically directs incoming requests to the appropriate backend service based on the URL pattern. Think of it as a <strong>smart traffic controller</strong> that knows where to send each request.</p>
+        </div>
+
+        <h2><span class="emoji">🔧</span> How It Works in Your Project</h2>
+
+        <h3>1. Build Configuration (<code>builds</code> array)</h3>
+        <div class="config-box">
+            <pre><code>{
+  "builds": [
+    { "src": "frontend/package.json", "use": "@vercel/next" },
+    { "src": "api/app.py", "use": "@vercel/python" }
+  ]
+}</code></pre>
+        </div>
+
+        <p><strong>What this does:</strong></p>
+        <ul>
+            <li><strong>Builds two separate applications</strong> on Vercel</li>
+            <li><strong>Next.js app</strong> from the <code>frontend/</code> directory</li>
+            <li><strong>Python FastAPI app</strong> from the <code>api/</code> directory</li>
+            <li><strong>Each gets its own runtime environment</strong> (Node.js vs Python)</li>
+        </ul>
+
+        <h3>2. Route Rules (<code>routes</code> array)</h3>
+        <div class="config-box">
+            <pre><code>{
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/api/app.py" },
+    { "src": "/(.*)", "dest": "/frontend/$1" }
+  ]
+}</code></pre>
+        </div>
+
+        <h2><span class="emoji">🎯</span> How the Routing Works</h2>
+
+        <div class="route-rule api">
+            <h3>Rule 1: API Calls → Python Backend</h3>
+            <pre><code>{ "src": "/api/(.*)", "dest": "/api/app.py" }</code></pre>
+            
+            <p><strong>What happens:</strong></p>
+            <ul>
+                <li><strong>Pattern:</strong> Any URL starting with <code>/api/</code></li>
+                <li><strong>Examples:</strong></li>
+                <ul>
+                    <li><code>https://your-app.vercel.app/api/chat</code> → Python FastAPI</li>
+                    <li><code>https://your-app.vercel.app/api/health</code> → Python FastAPI</li>
+                    <li><code>https://your-app.vercel.app/api/users</code> → Python FastAPI</li>
+                </ul>
+                <li><strong>Destination:</strong> Routes to <code>api/app.py</code> (your FastAPI server)</li>
+                <li><strong>Purpose:</strong> Handle all API requests, database operations, AI processing</li>
+            </ul>
+        </div>
+
+        <div class="route-rule frontend">
+            <h3>Rule 2: Everything Else → Next.js Frontend</h3>
+            <pre><code>{ "src": "/(.*)", "dest": "/frontend/$1" }</code></pre>
+            
+            <p><strong>What happens:</strong></p>
+            <ul>
+                <li><strong>Pattern:</strong> Any URL that doesn't match <code>/api/</code></li>
+                <li><strong>Examples:</strong></li>
+                <ul>
+                    <li><code>https://your-app.vercel.app/</code> → Next.js (homepage)</li>
+                    <li><code>https://your-app.vercel.app/about</code> → Next.js (about page)</li>
+                    <li><code>https://your-app.vercel.app/contact</code> → Next.js (contact page)</li>
+                    <li><code>https://your-app.vercel.app/static/image.png</code> → Next.js (static files)</li>
+                </ul>
+                <li><strong>Destination:</strong> Routes to <code>frontend/</code> directory</li>
+                <li><strong>Purpose:</strong> Serve the React UI, static assets, client-side routing</li>
+            </ul>
+        </div>
+
+        <h2><span class="emoji">🎯</span> Real-World Examples</h2>
+
+        <div class="example">
+            <h3>Scenario 1: User visits homepage</h3>
+            <div class="flow-diagram">
+                Request: GET https://the-ai-engineer-challenge-sable.vercel.app/
+                ↓
+                Route: /(.*) matches
+                ↓
+                Destination: /frontend/ (Next.js)
+                ↓
+                Result: Serves your beautiful React homepage
+            </div>
+        </div>
+
+        <div class="example">
+            <h3>Scenario 2: User sends a chat message</h3>
+            <div class="flow-diagram">
+                Request: POST https://the-ai-engineer-challenge-sable.vercel.app/api/chat
+                ↓
+                Route: /api/(.*) matches
+                ↓
+                Destination: /api/app.py (Python FastAPI)
+                ↓
+                Result: Processes AI request, streams response back
+            </div>
+        </div>
+
+        <div class="example">
+            <h3>Scenario 3: Health check</h3>
+            <div class="flow-diagram">
+                Request: GET https://the-ai-engineer-challenge-sable.vercel.app/api/health
+                ↓
+                Route: /api/(.*) matches
+                ↓
+                Destination: /api/app.py (Python FastAPI)
+                ↓
+                Result: Returns {"status": "ok"}
+            </div>
+        </div>
+
+        <h2><span class="emoji">🚀</span> Why This is "Smart"</h2>
+
+        <h3>1. Performance Optimization</h3>
+        <ul>
+            <li><strong>Next.js</strong> handles UI rendering (fast, client-side)</li>
+            <li><strong>Python</strong> handles AI processing (powerful, server-side)</li>
+            <li><strong>Each service optimized</strong> for its specific task</li>
+        </ul>
+
+        <h3>2. Scalability</h3>
+        <ul>
+            <li><strong>Frontend and backend scale independently</strong></li>
+            <li><strong>Can deploy updates</strong> to either service separately</li>
+            <li><strong>Load balancing</strong> happens automatically</li>
+        </ul>
+
+        <h3>3. Development Experience</h3>
+        <ul>
+            <li><strong>Clear separation</strong> of concerns</li>
+            <li><strong>Different teams</strong> can work on frontend vs backend</li>
+            <li><strong>Different technologies</strong> for different needs</li>
+        </ul>
+
+        <h3>4. Cost Efficiency</h3>
+        <ul>
+            <li><strong>Only pay for what you use</strong></li>
+            <li><strong>Serverless functions</strong> scale to zero when not used</li>
+            <li><strong>Static assets</strong> served from CDN</li>
+        </ul>
+
+        <h2><span class="emoji">🔄</span> Request Flow Diagram</h2>
+        <div class="flow-diagram">
+            User Request
+                ↓
+            Vercel Edge Network
+                ↓
+            Route Matching Engine
+                ↓
+            ┌─────────────────┬─────────────────┐
+            │   /api/*        │   /*            │
+            │   ↓             │   ↓             │
+            │ Python FastAPI  │ Next.js React   │
+            │ (AI Processing) │ (UI Rendering)  │
+            └─────────────────┴─────────────────┘
+                ↓                     ↓
+            AI Response          HTML/JS/CSS
+                ↓                     ↓
+                └─────→ User Browser ←─────┘
+        </div>
+
+        <h2><span class="emoji">💡</span> Key Benefits</h2>
+        <ul>
+            <li><strong>Single Domain:</strong> Everything under one URL</li>
+            <li><strong>Automatic Routing:</strong> No manual configuration needed</li>
+            <li><strong>Type Safety:</strong> TypeScript frontend + Python backend</li>
+            <li><strong>Real-time:</strong> Streaming AI responses</li>
+            <li><strong>Production Ready:</strong> Handles traffic, errors, scaling</li>
+        </ul>
+
+        <h2><span class="emoji">📁</span> Project Structure</h2>
+        <div class="config-box">
+            <pre><code>The-AI-Engineer-Challenge/
+├── frontend/                 # Next.js React App
+│   ├── src/app/page.tsx     # Main UI component
+│   ├── package.json         # Node.js dependencies
+│   └── ...
+├── api/                     # Python FastAPI Backend
+│   ├── app.py              # Main API server
+│   ├── requirements.txt    # Python dependencies
+│   └── ...
+└── vercel.json             # Smart routing configuration</code></pre>
+        </div>
+
+        <h2><span class="emoji">🔧</span> Configuration Details</h2>
+        <div class="config-box">
+            <h3>Vercel.json Breakdown</h3>
+            <pre><code>{
+  "version": 2,
+  "builds": [
+    { "src": "frontend/package.json", "use": "@vercel/next" },
+    { "src": "api/app.py", "use": "@vercel/python" }
+  ],
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/api/app.py" },
+    { "src": "/(.*)", "dest": "/frontend/$1" }
+  ]
+}</code></pre>
+        </div>
+
+        <ul>
+            <li><strong>version:</strong> Vercel configuration version</li>
+            <li><strong>builds:</strong> Defines what to build and how</li>
+            <li><strong>routes:</strong> Defines how to route requests</li>
+            <li><strong>src:</strong> URL pattern to match</li>
+            <li><strong>dest:</strong> Where to send matching requests</li>
+        </ul>
+
+        <div class="highlight">
+            <p>This smart routing system is what makes your app feel like a <strong>single, cohesive application</strong> while actually being <strong>two separate services</strong> working together seamlessly! <span class="emoji">🎯</span></p>
+        </div>
+
+        <hr>
+        <p><em>Generated for The AI Engineer Challenge project</em><br>
+        <strong>Live app:</strong> <a href="https://the-ai-engineer-challenge-sable.vercel.app">https://the-ai-engineer-challenge-sable.vercel.app</a></p>
+    </div>
+</body>
+</html>
+
+
