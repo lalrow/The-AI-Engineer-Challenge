@@ -62,6 +62,11 @@ export default function Home() {
       return;
     }
 
+    if (!userId.trim()) {
+      alert('User ID not ready yet. Please wait a moment and try again.');
+      return;
+    }
+
     setIsLoading(true);
     setChatResponse('Sending request...');
 
@@ -73,6 +78,9 @@ export default function Home() {
         api_key: apiKey,
         user_id: userId
       };
+
+      console.log('Sending request with user_id:', userId);
+      console.log('Request body:', requestBody);
 
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 15000);
