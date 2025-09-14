@@ -255,7 +255,7 @@ export default function Home() {
                     Get your API key from <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" className="text-yellow-400 hover:text-yellow-300 underline">OpenAI Platform</a>
                   </p>
                 </div>
-                <div className="flex gap-4">
+                <div className="flex gap-4 items-end">
                   <textarea
                     value={userMessage}
                     onChange={(e) => setUserMessage(e.target.value)}
@@ -272,7 +272,7 @@ export default function Home() {
                   <button
                     onClick={testChat}
                     disabled={isLoading}
-                    className="px-6 py-3 bg-green-500 hover:bg-green-600 disabled:bg-gray-500 rounded-full font-medium transition-colors"
+                    className="px-6 py-3 bg-green-500 hover:bg-green-600 disabled:bg-gray-500 rounded-full font-medium transition-colors flex-shrink-0"
                   >
                     {isLoading ? 'Sending...' : 'Send Message'}
                   </button>
