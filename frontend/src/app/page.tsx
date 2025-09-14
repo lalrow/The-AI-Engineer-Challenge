@@ -256,13 +256,18 @@ export default function Home() {
                   </p>
                 </div>
                 <div className="flex gap-4">
-                  <input
-                    type="text"
+                  <textarea
                     value={userMessage}
                     onChange={(e) => setUserMessage(e.target.value)}
                     placeholder="Enter your message..."
-                    className="flex-1 px-4 py-3 rounded-full border-0 bg-white/20 text-white placeholder-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    onKeyPress={(e) => e.key === 'Enter' && testChat()}
+                    className="flex-1 px-4 py-3 rounded-lg border-0 bg-white/20 text-white placeholder-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none min-h-[48px] max-h-32"
+                    onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && testChat()}
+                    rows={1}
+                    style={{ height: 'auto' }}
+                    onInput={(e) => {
+                      e.currentTarget.style.height = 'auto';
+                      e.currentTarget.style.height = e.currentTarget.scrollHeight + 'px';
+                    }}
                   />
                   <button
                     onClick={testChat}

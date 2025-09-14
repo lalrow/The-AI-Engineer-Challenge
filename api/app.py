@@ -82,7 +82,7 @@ async def chat(request: ChatRequest):
         save_conversations(user_conversations)
         
         # Prepare messages for OpenAI (system + conversation history)
-        messages = [{"role": "system", "content": request.developer_message}]
+        messages = [{"role": "system", "content": "You are a helpful AI assistant. Always provide clear, accurate, and well-structured responses. When explaining concepts, use simple language and relatable examples. When summarizing, capture all key points concisely. When writing creatively, be imaginative and engaging. When solving problems, show your reasoning step-by-step. When rewriting text, maintain professional tone and correct all errors."}]
         messages.extend(user_conversations[request.user_id][-10:])  # Keep last 10 messages
         
         # Create an async generator function for streaming responses

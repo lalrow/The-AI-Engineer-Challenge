@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI App Architecture Diagram</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 800px;
+            width: 100%;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #2d3748;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        
+        .diagram {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .box {
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            border: 3px solid #e2e8f0;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+        
+        .box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+        
+        .box h3 {
+            margin: 0 0 15px 0;
+            color: #2d3748;
+            font-size: 1.4em;
+            font-weight: 600;
+        }
+        
+        .box p {
+            margin: 0;
+            color: #4a5568;
+            line-height: 1.5;
+            font-size: 1.1em;
+        }
+        
+        .box .emoji {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            display: block;
+        }
+        
+        .arrow {
+            position: absolute;
+            font-size: 2em;
+            color: #667eea;
+            font-weight: bold;
+        }
+        
+        .arrow-right {
+            right: -15px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        
+        .arrow-down {
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .flow-text {
+            text-align: center;
+            color: #4a5568;
+            font-style: italic;
+            margin: 20px 0;
+            font-size: 1.1em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏗️ AI App Architecture</h1>
+        
+        <div class="flow-text">How the components work together</div>
+        
+        <div class="diagram">
+            <!-- Top Left: User -->
+            <div class="box">
+                <span class="emoji">👤</span>
+                <h3>User</h3>
+                <p>Enters messages and receives AI responses through the web interface</p>
+            </div>
+            
+            <!-- Top Right: Frontend -->
+            <div class="box">
+                <span class="emoji">⚛️</span>
+                <h3>Frontend<br>(Next.js + React)</h3>
+                <p>Handles UI, user input, streaming responses, and localStorage for user tracking</p>
+            </div>
+            
+            <!-- Bottom Left: Backend -->
+            <div class="box">
+                <span class="emoji">🐍</span>
+                <h3>Backend<br>(FastAPI + Python)</h3>
+                <p>Processes requests, manages conversation history, and handles AI integration</p>
+            </div>
+            
+            <!-- Bottom Right: AI Service -->
+            <div class="box">
+                <span class="emoji">🤖</span>
+                <h3>AI Service<br>(OpenAI GPT-4)</h3>
+                <p>Generates intelligent responses and maintains conversation context</p>
+            </div>
+        </div>
+        
+        <div class="flow-text">
+            <strong>Flow:</strong> User → Frontend → Backend → AI Service → Backend → Frontend → User
+        </div>
+    </div>
+</body>
+</html>
