@@ -10,6 +10,24 @@ interface ChatRequest {
   user_id: string;
 }
 
+interface RAGChatRequest {
+  user_message: string;
+  model: string;
+  api_key: string;
+  user_id: string;
+}
+
+interface RAGStatus {
+  user_id: string;
+  has_index: boolean;
+  message?: string;
+  index_info?: {
+    filename: string;
+    upload_time: string;
+    text_length: number;
+  };
+}
+
 interface HealthResponse {
   status: string;
 }
@@ -22,6 +40,10 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [apiKey, setApiKey] = useState('');
   const [userId, setUserId] = useState<string>('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadStatus, setUploadStatus] = useState<string>('');
+  const [ragStatus, setRagStatus] = useState<RAGStatus | null>(null);
+  const [chatMode, setChatMode] = useState<'normal' | 'rag'>('normal');
 
   // Generate or retrieve user ID on component mount
   useEffect(() => {
@@ -138,9 +160,162 @@ export default function Home() {
     }
   };
 
+  const uploadPDF = async () => {
+    if (!selectedFile) {
+      alert('Please select a PDF file');
+      return;
+    }
+
+    if (!apiKey.trim()) {
+      alert('Please enter your OpenAI API key');
+      return;
+    }
+
+    if (!userId.trim()) {
+      alert('User ID not ready yet. Please wait a moment and try again.');
+      return;
+    }
+
+    setUploadStatus('Uploading PDF...');
+
+    try {
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+      formData.append('api_key', apiKey);
+      formData.append('user_id', userId);
+
+      const response = await fetch('/api/upload-pdf', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        setUploadStatus(`Error: HTTP ${response.status} - ${errorText}`);
+        return;
+      }
+
+      const result = await response.json();
+      setUploadStatus(`✅ ${result.message}`);
+      setChatMode('rag');
+      checkRAGStatus();
+    } catch (error) {
+      setUploadStatus(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  };
+
+  const ragChat = async () => {
+    if (!userMessage.trim()) {
+      alert('Please enter a message');
+      return;
+    }
+
+    if (!apiKey.trim()) {
+      alert('Please enter your OpenAI API key');
+      return;
+    }
+
+    if (!userId.trim()) {
+      alert('User ID not ready yet. Please wait a moment and try again.');
+      return;
+    }
+
+    setIsLoading(true);
+    setChatResponse('Sending RAG request...');
+
+    try {
+      const requestBody: RAGChatRequest = {
+        user_message: userMessage,
+        model: "gpt-4.1-mini",
+        api_key: apiKey,
+        user_id: userId
+      };
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+      const response = await fetch('/api/rag-chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        const maybeText = await response.text().catch(() => '');
+        setChatResponse(`Error: HTTP ${response.status}${maybeText ? ` - ${maybeText}` : ''}`);
+        return;
+      }
+
+      if (!response.body) {
+        const text = await response.text().catch(() => '');
+        setChatResponse(text || 'No response body received from server.');
+        return;
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let result = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        result += decoder.decode(value);
+        setChatResponse(result);
+      }
+
+      if (!result) {
+        setChatResponse('No content received from the stream.');
+      }
+    } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') {
+        setChatResponse('Request timed out. Please try again or provide a valid API key.');
+      } else {
+        setChatResponse(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const checkRAGStatus = async () => {
+    if (!userId.trim()) return;
+
+    try {
+      const response = await fetch(`/api/rag-status/${userId}`);
+      if (response.ok) {
+        const status = await response.json();
+        setRagStatus(status);
+      }
+    } catch (error) {
+      console.error('Error checking RAG status:', error);
+    }
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file && file.type === 'application/pdf') {
+      setSelectedFile(file);
+      setUploadStatus('');
+    } else {
+      alert('Please select a valid PDF file');
+      setSelectedFile(null);
+    }
+  };
+
   useEffect(() => {
     checkHealth();
   }, []);
+
+  useEffect(() => {
+    if (userId) {
+      checkRAGStatus();
+    }
+  }, [userId]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-800 text-white">
@@ -187,6 +362,91 @@ export default function Home() {
             )}
           </div>
 
+          {/* PDF Upload Section */}
+          <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 mb-8 shadow-xl">
+            <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
+              <span className="text-2xl">📄</span>
+              PDF Upload & RAG
+            </h2>
+            
+            <div className="space-y-4">
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-blue-100 mb-2">
+                    Upload PDF for RAG
+                  </label>
+                  <div className="flex gap-4 items-center">
+                    <input
+                      type="file"
+                      accept=".pdf"
+                      onChange={handleFileChange}
+                      className="flex-1 px-4 py-3 rounded-lg border-0 bg-white/20 text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-500 file:text-white hover:file:bg-blue-600"
+                    />
+                    <button
+                      onClick={uploadPDF}
+                      disabled={!selectedFile || !apiKey.trim() || !userId.trim()}
+                      className="px-6 py-3 bg-purple-500 hover:bg-purple-600 disabled:bg-gray-500 rounded-full font-medium transition-colors flex-shrink-0"
+                    >
+                      Upload PDF
+                    </button>
+                  </div>
+                  {selectedFile && (
+                    <p className="text-sm text-blue-200 mt-2">
+                      Selected: {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
+                    </p>
+                  )}
+                </div>
+                
+                {uploadStatus && (
+                  <div className="bg-black/20 p-4 rounded-lg">
+                    <p className="text-sm">{uploadStatus}</p>
+                  </div>
+                )}
+
+                {ragStatus && (
+                  <div className="bg-black/20 p-4 rounded-lg">
+                    <h3 className="font-semibold mb-2">RAG Status:</h3>
+                    {ragStatus.has_index ? (
+                      <div>
+                        <p className="text-green-400">✅ PDF indexed successfully</p>
+                        <p className="text-sm text-blue-200">
+                          File: {ragStatus.index_info?.filename} | 
+                          Length: {ragStatus.index_info?.text_length} characters
+                        </p>
+                      </div>
+                    ) : (
+                      <p className="text-yellow-400">⚠️ No PDF uploaded yet</p>
+                    )}
+                  </div>
+                )}
+
+                <div className="flex gap-4">
+                  <button
+                    onClick={() => setChatMode('normal')}
+                    className={`px-4 py-2 rounded-full font-medium transition-colors ${
+                      chatMode === 'normal' 
+                        ? 'bg-blue-500 text-white' 
+                        : 'bg-white/20 text-blue-200 hover:bg-white/30'
+                    }`}
+                  >
+                    Normal Chat
+                  </button>
+                  <button
+                    onClick={() => setChatMode('rag')}
+                    disabled={!ragStatus?.has_index}
+                    className={`px-4 py-2 rounded-full font-medium transition-colors ${
+                      chatMode === 'rag' 
+                        ? 'bg-purple-500 text-white' 
+                        : 'bg-white/20 text-blue-200 hover:bg-white/30 disabled:bg-gray-500 disabled:text-gray-400'
+                    }`}
+                  >
+                    RAG Chat
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* API Endpoints Section */}
           <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 mb-8 shadow-xl">
             <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
@@ -217,6 +477,42 @@ export default function Home() {
                   <strong>Body:</strong> JSON with developer_message, user_message, model, api_key
                 </p>
               </div>
+
+              <div className="bg-black/20 p-4 rounded-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="px-2 py-1 bg-purple-500 text-white text-xs font-bold rounded">
+                    POST
+                  </span>
+                  <code className="text-lg font-mono">/api/upload-pdf</code>
+                </div>
+                <p className="text-blue-100 mb-2">Upload and index PDF for RAG</p>
+                <p className="text-sm text-blue-200">
+                  <strong>Body:</strong> FormData with file, api_key, user_id
+                </p>
+              </div>
+
+              <div className="bg-black/20 p-4 rounded-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="px-2 py-1 bg-purple-500 text-white text-xs font-bold rounded">
+                    POST
+                  </span>
+                  <code className="text-lg font-mono">/api/rag-chat</code>
+                </div>
+                <p className="text-blue-100 mb-2">Chat with uploaded PDF using RAG</p>
+                <p className="text-sm text-blue-200">
+                  <strong>Body:</strong> JSON with user_message, model, api_key, user_id
+                </p>
+              </div>
+
+              <div className="bg-black/20 p-4 rounded-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="px-2 py-1 bg-green-500 text-white text-xs font-bold rounded">
+                    GET
+                  </span>
+                  <code className="text-lg font-mono">/api/rag-status/{"{user_id}"}</code>
+                </div>
+                <p className="text-blue-100">Check RAG index status for a user</p>
+              </div>
             </div>
           </div>
 
@@ -224,7 +520,7 @@ export default function Home() {
           <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 shadow-xl">
             <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
               <span className="text-2xl">💬</span>
-              Test Chat API
+              {chatMode === 'rag' ? 'RAG Chat with PDF' : 'Test Chat API'}
             </h2>
             
             <div className="space-y-4">
@@ -270,7 +566,7 @@ export default function Home() {
                     }}
                   />
                   <button
-                    onClick={testChat}
+                    onClick={chatMode === 'rag' ? ragChat : testChat}
                     disabled={isLoading}
                     className="px-6 py-3 bg-green-500 hover:bg-green-600 disabled:bg-gray-500 rounded-full font-medium transition-colors flex-shrink-0"
                   >
