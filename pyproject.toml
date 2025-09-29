@@ -15,4 +15,6 @@ dependencies = [
     "python-multipart",
     "python-dotenv",
     "reportlab>=4.4.4",
+    "pymupdf>=1.26.4",
+    "langchain-community>=0.3.30",
 ]

@@ -10,10 +10,16 @@ import time
 import json
 from typing import Optional
 from fastapi.responses import StreamingResponse
-import PyPDF2
 import io
 import numpy as np
 from typing import List, Dict, Any
+# Import PyMuPDFLoader for better PDF processing
+from langchain_community.document_loaders import PyMuPDFLoader
+from langchain_text_splitters import CharacterTextSplitter
+# No need for dotenv - just use os.getenv directly
+
+# Get OpenAI API key from environment variable
+DEFAULT_OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "test-key")
 
 # Initialize FastAPI application with a title
 app = FastAPI(title="OpenAI Chat API")
@@ -33,11 +39,18 @@ class RAG:
         self.client = OpenAI(api_key=api_key)
         self.documents = []
         self.embeddings = []
-    
+        self.rag_index_file = RAG_INDEX_FILE # Default to global file
+
     def add_document(self, text: str, metadata: Dict = None):
         """Add a document to the RAG system with optional metadata"""
-        # Split text into chunks
-        chunks = self._split_text(text)
+        # Use LangChain's text splitter for better chunking
+        text_splitter = CharacterTextSplitter(
+            chunk_size=1000,
+            chunk_overlap=200,
+            length_function=len,
+            separator="\n"
+        )
+        chunks = text_splitter.split_text(text)
         
         # Add chunks with metadata
         for chunk in chunks:
@@ -50,6 +63,36 @@ class RAG:
             # Generate embeddings for chunks
             embedding = self._get_embedding(chunk)
             self.embeddings.append(embedding)
+    
+    def save_state(self):
+        """Save the current state of RAG documents and embeddings to a file."""
+        try:
+            state = {
+                "documents": self.documents,
+                "embeddings": self.embeddings,
+            }
+            with open(self.rag_index_file, 'w') as f:
+                json.dump(state, f)
+            print(f"📚 RAG state saved to {self.rag_index_file}")
+        except Exception as e:
+            print(f"Error saving RAG state: {e}")
+
+    def load_state(self):
+        """Load RAG documents and embeddings from a file."""
+        try:
+            if os.path.exists(self.rag_index_file):
+                with open(self.rag_index_file, 'r') as f:
+                    state = json.load(f)
+                    self.documents = state.get("documents", [])
+                    self.embeddings = state.get("embeddings", [])
+                print(f"📚 RAG state loaded from {self.rag_index_file}. Documents: {len(self.documents)}, Embeddings: {len(self.embeddings)}")
+                return True
+            else:
+                print(f"📚 No RAG state file found at {self.rag_index_file}.")
+                return False
+        except Exception as e:
+            print(f"Error loading RAG state: {e}")
+            return False
     
     def _split_text(self, text: str, chunk_size: int = 1000) -> List[str]:
         """Split text into chunks"""
@@ -156,44 +199,59 @@ def save_conversations(conversations):
         pass
 
 def extract_text_from_pdf(pdf_file: UploadFile) -> str:
-    """Extract text content from uploaded PDF file"""
+    """Extract text content from uploaded PDF file using PyMuPDFLoader"""
     try:
         # Read the PDF file content
         pdf_content = pdf_file.file.read()
         pdf_file.file.seek(0)  # Reset file pointer
         
-        # Create a PDF reader object
-        pdf_reader = PyPDF2.PdfReader(io.BytesIO(pdf_content))
+        # Save PDF content to a temporary file for PyMuPDFLoader
+        import tempfile
+        with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as temp_file:
+            temp_file.write(pdf_content)
+            temp_file_path = temp_file.name
         
-        # Extract text from all pages
-        text = ""
-        for page_num in range(len(pdf_reader.pages)):
-            page = pdf_reader.pages[page_num]
-            text += page.extract_text() + "\n"
-        
-        return text.strip()
+        try:
+            # Use PyMuPDFLoader to extract text
+            loader = PyMuPDFLoader(temp_file_path)
+            documents = loader.load()
+            
+            # Combine all document text
+            text = "\n\n".join([doc.page_content for doc in documents])
+            
+            return text.strip()
+        finally:
+            # Clean up temporary file
+            os.unlink(temp_file_path)
+            
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Error extracting text from PDF: {str(e)}")
 
-async def initialize_rag_system(api_key: str):
+async def initialize_rag_system(api_key: str = None):
     """Initialize the RAG system with OpenAI API key and auto-load PDFs"""
     global rag_system
     try:
         if rag_system is None:
             print("🔄 Initializing RAG system...")
-            rag_system = RAG(api_key=api_key)
             
-            # Try to load existing RAG index
-            loaded_rag = load_rag_index(api_key)
-            if loaded_rag and len(loaded_rag.documents) > 0:
-                rag_system = loaded_rag
-                print(f"✅ RAG system loaded from index with {len(rag_system.documents)} documents")
+            # Use provided API key or fall back to environment variable
+            effective_api_key = api_key or DEFAULT_OPENAI_API_KEY
+            
+            # Check if we have a valid API key
+            if effective_api_key == "test-key" or not effective_api_key:
+                print("⚠️  Using test API key - RAG will work but with limited functionality")
+                print("💡 Set OPENAI_API_KEY in .env file for full functionality")
+            
+            rag_system = RAG(api_key=effective_api_key)
+            
+            # Load existing RAG state if available
+            rag_system.load_state()
+            
+            # Simplify initialization messages - RAG class now handles its own state
+            if len(rag_system.documents) == 0:
+                print("📚 RAG system started empty - upload PDFs to get started.")
             else:
-                # Auto-upload Grade-3 PDFs if no existing index
-                print("📚 No existing RAG index found, but auto-initialization is disabled")
-                # await initialize_pdf_rag_system(rag_system)  # Commented out - function doesn't exist
-                # save_rag_index(rag_system)
-                print("ℹ️  RAG system will start empty - upload PDFs manually via /api/upload-pdf")
+                print(f"📚 RAG system initialized with {len(rag_system.documents)} document chunks.")
                 
         return rag_system
     except Exception as e:
@@ -354,7 +412,10 @@ async def upload_pdf(
         # Index the PDF content
         rag.add_document(pdf_text)
         
-        # Save the index
+        # Save the updated RAG state
+        rag.save_state()
+        
+        # Save the index (this is for metadata, not RAG state)
         index_data = load_rag_index()
         index_data[user_id] = {
             "filename": file.filename,
@@ -366,7 +427,9 @@ async def upload_pdf(
         return {
             "message": "PDF uploaded and indexed successfully",
             "filename": file.filename,
+            "text": pdf_text,
             "text_length": len(pdf_text),
+            "chunks": len(rag.documents),
             "user_id": user_id
         }
         
@@ -398,39 +461,62 @@ async def rag_chat(request: RAGChatRequest):
         # Save conversations immediately
         save_conversations(user_conversations)
         
-        # Create an async generator function for streaming responses
-        async def generate():
-            try:
-                # Use RAG to get context-aware response
-                response = rag.query(request.user_message)
-                
-                # Store the AI response in conversation history
-                user_conversations[request.user_id].append({
-                    "role": "assistant", 
-                    "content": response,
-                    "timestamp": str(time.time())
-                })
-                
-                # Save conversations after AI response
-                save_conversations(user_conversations)
-                
-                # Yield the response
-                yield response
-                
-            except Exception as e:
-                error_msg = f"Error in RAG query: {str(e)}"
-                yield error_msg
-
-        # Return a streaming response to the client
-        return StreamingResponse(generate(), media_type="text/plain")
+        # Use RAG to get context-aware response
+        response = rag.query(request.user_message)
+        
+        # Store the AI response in conversation history
+        user_conversations[request.user_id].append({
+            "role": "assistant", 
+            "content": response,
+            "timestamp": str(time.time())
+        })
+        
+        # Save conversations after AI response
+        save_conversations(user_conversations)
+        
+        # Return JSON response
+        return {
+            "message": response,
+            "documentsCount": len(rag.documents) if rag else 0,
+            "status": "ok"
+        }
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 # Get RAG index status
+@app.get("/api/rag-status")
+async def get_rag_status():
+    """Get the general status of RAG system"""
+    try:
+        # Get the global RAG system using environment variable
+        rag = await initialize_rag_system()
+        
+        # Check if rag is a RAG object or a dictionary
+        if hasattr(rag, 'documents'):
+            documents_count = len(rag.documents)
+        elif isinstance(rag, dict) and 'documents' in rag:
+            documents_count = len(rag['documents'])
+        else:
+            documents_count = 0
+        
+        return {
+            "has_index": documents_count > 0,
+            "documentsCount": documents_count,
+            "status": "ready" if documents_count > 0 else "empty",
+            "message": f"RAG system ready with {documents_count} document chunks" if documents_count > 0 else "No documents indexed yet. Upload PDFs to get started."
+        }
+    except Exception as e:
+        return {
+            "has_index": False,
+            "documentsCount": 0,
+            "status": "error",
+            "message": f"Error checking RAG status: {str(e)}"
+        }
+
 @app.get("/api/rag-status/{user_id}")
-async def get_rag_status(user_id: str):
-    """Get the status of RAG index for a user"""
+async def get_rag_status_by_user(user_id: str):
+    """Get the status of RAG index for a specific user"""
     index_data = load_rag_index()
     
     if user_id not in index_data:

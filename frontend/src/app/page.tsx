@@ -11,10 +11,9 @@ interface ChatRequest {
 }
 
 interface RAGChatRequest {
-  user_message: string;
-  model: string;
-  api_key: string;
-  user_id: string;
+  message: string;
+  apiKey: string;
+  userId: string;
 }
 
 interface RAGStatus {
@@ -91,25 +90,47 @@ export default function Home() {
       return;
     }
 
+    if (!userMessage.trim()) {
+      alert('Please enter a message');
+      return;
+    }
+
     setIsLoading(true);
     setChatResponse('Sending request...');
 
     try {
-      const requestBody: ChatRequest = {
-        developer_message: "You are a helpful AI assistant.",
-        user_message: userMessage,
-        model: "gpt-4.1-mini",
-        api_key: apiKey,
-        user_id: userId
-      };
+      // Choose API endpoint based on chat mode
+      const apiEndpoint = chatMode === 'rag' ? '/api/rag-chat' : '/api/chat';
+      
+      let requestBody: ChatRequest | RAGChatRequest;
+      
+      if (chatMode === 'rag') {
+        requestBody = {
+          message: userMessage,
+          apiKey: apiKey,
+          userId: userId
+        };
+      } else {
+        requestBody = {
+          developer_message: "You are a helpful AI assistant.",
+          user_message: userMessage,
+          model: "gpt-4.1-mini",
+          api_key: apiKey,
+          user_id: userId
+        };
+      }
 
       console.log('Sending request with user_id:', userId);
       console.log('Request body:', requestBody);
+      console.log('Using API endpoint:', apiEndpoint);
+      console.log('Current chat mode:', chatMode);
+      console.log('User message:', userMessage);
+      console.log('User message length:', userMessage?.length);
 
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 15000);
 
-      const response = await fetch('/api/chat', {
+      const response = await fetch(apiEndpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -130,26 +151,33 @@ export default function Home() {
         return;
       }
 
-      // If there's no body (no stream), fall back to reading text
-      if (!response.body) {
-        const text = await response.text().catch(() => '');
-        setChatResponse(text || 'No response body received from server.');
-        return;
-      }
+      // Handle different response types based on chat mode
+      if (chatMode === 'rag') {
+        // RAG chat returns JSON response
+        const data = await response.json();
+        setChatResponse(data.message || 'No response received from RAG system.');
+      } else {
+        // Normal chat returns streaming response
+        if (!response.body) {
+          const text = await response.text().catch(() => '');
+          setChatResponse(text || 'No response body received from server.');
+          return;
+        }
 
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let result = '';
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let result = '';
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        result += decoder.decode(value);
-        setChatResponse(result);
-      }
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          result += decoder.decode(value);
+          setChatResponse(result);
+        }
 
-      if (!result) {
-        setChatResponse('No content received from the stream.');
+        if (!result) {
+          setChatResponse('No content received from the stream.');
+        }
       }
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
@@ -227,10 +255,9 @@ export default function Home() {
 
     try {
       const requestBody: RAGChatRequest = {
-        user_message: userMessage,
-        model: "gpt-4.1-mini",
-        api_key: apiKey,
-        user_id: userId
+        message: userMessage,
+        apiKey: apiKey,
+        userId: userId
       };
 
       const controller = new AbortController();

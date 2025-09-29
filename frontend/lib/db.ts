@@ -71,19 +71,40 @@ export interface CompletedTopic {
   completedAt: string;
 }
 
-// In-memory data storage
+// In-memory data storage - ensure singleton behavior using global
 let nextId = 1;
-const data = {
-  kids: [
-    { id: 1, name: 'Demo Kid', pin: '1234', createdAt: new Date().toISOString() }
-  ] as Kid[],
-  sessions: [] as Session[],
-  conversations: [] as Conversation[],
-  pdf_metadata: [] as PDFMetadata[],
-  pdf_embeddings: [] as PDFEmbedding[],
-  completed_topics: [] as CompletedTopic[],
-  quiz_questions: [] as QuizQuestion[]
-};
+
+// Use globalThis to ensure persistence across module reloads
+declare global {
+  var __kidsTutorDB: {
+    kids: Kid[];
+    sessions: Session[];
+    conversations: Conversation[];
+    pdf_metadata: PDFMetadata[];
+    pdf_embeddings: PDFEmbedding[];
+    completed_topics: CompletedTopic[];
+    quiz_questions: QuizQuestion[];
+  } | undefined;
+}
+
+// Initialize data if not already initialized
+export function getData() {
+  if (!globalThis.__kidsTutorDB) {
+    globalThis.__kidsTutorDB = {
+      kids: [
+        { id: 1, name: 'Demo Kid', pin: '1234', createdAt: new Date().toISOString() }
+      ] as Kid[],
+      sessions: [] as Session[],
+      conversations: [] as Conversation[],
+      pdf_metadata: [] as PDFMetadata[],
+      pdf_embeddings: [] as PDFEmbedding[],
+      completed_topics: [] as CompletedTopic[],
+      quiz_questions: [] as QuizQuestion[]
+    };
+    console.log('[DB] Initialized new database instance');
+  }
+  return globalThis.__kidsTutorDB;
+}
 
 // Helper functions
 function generateId(): number {
@@ -92,16 +113,16 @@ function generateId(): number {
 
 // Kid Management Functions
 export function getKidById(kidId: number): Kid | null {
-  console.log(`[getKidById] kidId=${kidId}, data.kids length:`, data.kids.length);
-  console.log(`[getKidById] data.kids:`, data.kids);
-  const kid = data.kids.find(k => k.id === kidId);
+  console.log(`[getKidById] kidId=${kidId}, getData().kids length:`, getData().kids.length);
+  console.log(`[getKidById] getData().kids:`, getData().kids);
+  const kid = getData().kids.find(k => k.id === kidId);
   console.log(`[getKidById] returning:`, kid);
   return kid || null;
 }
 
 export function getKidByNameAndPin(name: string, pin: string): Kid | null {
   console.log(`[getKidByNameAndPin] name=${name}, pin=${pin}`);
-  const kid = data.kids.find(k => k.name === name && k.pin === pin);
+  const kid = getData().kids.find(k => k.name === name && k.pin === pin);
   console.log(`[getKidByNameAndPin] returning:`, kid);
   return kid || null;
 }
@@ -109,7 +130,7 @@ export function getKidByNameAndPin(name: string, pin: string): Kid | null {
 export function createKid(name: string, pin: string): Kid {
   console.log(`[createKid] name=${name}, pin=${pin}`);
   // Single-kid mode: always return the singleton
-  const kid = data.kids[0];
+  const kid = getData().kids[0];
   console.log(`[createKid] returning singleton:`, kid);
   return kid;
 }
@@ -123,31 +144,31 @@ export function createSession(kidId: number, pdfName: string, sessionNo: number)
     sessionNo,
     completedAt: new Date().toISOString()
   };
-  data.sessions.push(session);
+  getData().sessions.push(session);
   console.log(`[createSession] created session:`, session);
   return session;
 }
 
 export function getLastSession(kidId: number, pdfName: string): Session | null {
-  const sessions = data.sessions
+  const sessions = getData().sessions
     .filter(s => s.kidId === kidId && s.pdfName === pdfName)
     .sort((a, b) => b.sessionNo - a.sessionNo);
   return sessions[0] || null;
 }
 
 export function getSessionById(sessionId: number): Session | null {
-  return data.sessions.find(s => s.id === sessionId) || null;
+  return getData().sessions.find(s => s.id === sessionId) || null;
 }
 
 export function saveQuizScore(sessionId: number, score: number): void {
-  const session = data.sessions.find(s => s.id === sessionId);
+  const session = getData().sessions.find(s => s.id === sessionId);
   if (session) {
     session.quizScore = score;
   }
 }
 
 export function updateReadingTime(sessionId: number, readingTime: number): void {
-  const session = data.sessions.find(s => s.id === sessionId);
+  const session = getData().sessions.find(s => s.id === sessionId);
   if (session) {
     session.readingTimeSeconds = readingTime;
   }
@@ -170,12 +191,12 @@ export function logConversation(
     timestamp: new Date().toISOString(),
     type
   };
-  data.conversations.push(conversation);
+  getData().conversations.push(conversation);
   return conversation;
 }
 
 export function getConversationsForKid(kidId: number): Conversation[] {
-  return data.conversations.filter(c => c.kidId === kidId);
+  return getData().conversations.filter(c => c.kidId === kidId);
 }
 
 // PDF Metadata Functions
@@ -185,16 +206,16 @@ export function insertPDFMetadata(metadata: Omit<PDFMetadata, 'id' | 'createdAt'
     id: generateId(),
     createdAt: new Date().toISOString()
   };
-  data.pdf_metadata.push(pdfMetadata);
+  getData().pdf_metadata.push(pdfMetadata);
   return pdfMetadata;
 }
 
 export function getAllPDFMetadata(): PDFMetadata[] {
-  return data.pdf_metadata;
+  return getData().pdf_metadata;
 }
 
 export function getPDFMetadataByFilename(filename: string): PDFMetadata | null {
-  return data.pdf_metadata.find(pdf => pdf.filename === filename) || null;
+  return getData().pdf_metadata.find((pdf: PDFMetadata) => pdf.filename === filename) || null;
 }
 
 // Quiz Functions
@@ -214,22 +235,22 @@ export function saveQuizQuestion(
     sessionId,
     createdAt: new Date().toISOString()
   };
-  data.quiz_questions.push(quizQuestion);
+  getData().quiz_questions.push(quizQuestion);
   return quizQuestion;
 }
 
 export function getKidQuizHistory(kidId: number): QuizQuestion[] {
-  return data.quiz_questions.filter(q => q.kidId === kidId);
+  return getData().quiz_questions.filter(q => q.kidId === kidId);
 }
 
 // Topic Management Functions
 export function getAvailableTopics(kidId: number): PDFMetadata[] {
   // Get all PDFs that haven't been completed by this kid
-  const completedTopics = data.completed_topics
+  const completedTopics = getData().completed_topics
     .filter(ct => ct.kidId === kidId)
     .map(ct => `${ct.topic}-${ct.subtopic}`);
   
-  return data.pdf_metadata.filter(pdf => 
+  return getData().pdf_metadata.filter((pdf: PDFMetadata) => 
     !completedTopics.includes(`${pdf.topic}-${pdf.subtopic}`)
   );
 }
@@ -248,7 +269,7 @@ export function markTopicCompleted(
     score,
     completedAt: new Date().toISOString()
   };
-  data.completed_topics.push(completedTopic);
+  getData().completed_topics.push(completedTopic);
 }
 
 // Database Stats
@@ -259,15 +280,17 @@ export function getDatabaseStats(): {
   totalQuizQuestions: number;
 } {
   return {
-    totalKids: data.kids.length,
-    totalSessions: data.sessions.length,
-    totalConversations: data.conversations.length,
-    totalQuizQuestions: data.quiz_questions.length
+    totalKids: getData().kids.length,
+    totalSessions: getData().sessions.length,
+    totalConversations: getData().conversations.length,
+    totalQuizQuestions: getData().quiz_questions.length
   };
 }
 
 // Embedding Functions
 export function storeEmbedding(pdfId: number, chunkIndex: number, content: string, embedding: number[]): void {
+  console.log(`[storeEmbedding] Called with pdfId=${pdfId}, chunkIndex=${chunkIndex}, content length=${content.length}`);
+  const db = getData();
   const pdfEmbedding: PDFEmbedding = {
     id: generateId(),
     pdf_id: pdfId,
@@ -275,12 +298,14 @@ export function storeEmbedding(pdfId: number, chunkIndex: number, content: strin
     content,
     embedding
   };
-  data.pdf_embeddings.push(pdfEmbedding);
+  db.pdf_embeddings.push(pdfEmbedding);
+  console.log(`[storeEmbedding] Stored embedding. Total embeddings now: ${db.pdf_embeddings.length}`);
 }
 
 export function searchEmbeddings(queryEmbedding: number[], topK: number = 3): PDFEmbedding[] {
   // Simple cosine similarity search
-  const similarities = data.pdf_embeddings.map(emb => {
+  const db = getData();
+  const similarities = db.pdf_embeddings.map(emb => {
     const similarity = cosineSimilarity(queryEmbedding, emb.embedding);
     return { embedding: emb, similarity };
   });
@@ -305,7 +330,7 @@ export function initializeDatabase(): void {
   console.log('🔄 Initializing in-memory database...');
   
   // Populate with sample PDF metadata if empty
-  if (data.pdf_metadata.length === 0) {
+  if (getData().pdf_metadata.length === 0) {
     populateInitialPDFMetadata();
   }
   
@@ -375,16 +400,21 @@ function populateInitialPDFMetadata(): void {
 
 // Legacy functions for compatibility
 export function getEmbeddingsCount(): number {
-  return data.pdf_embeddings.length;
+  const db = getData();
+  console.log(`[getEmbeddingsCount] Total embeddings: ${db.pdf_embeddings.length}`);
+  console.log(`[getEmbeddingsCount] Data object:`, db);
+  return db.pdf_embeddings.length;
 }
 
 export function clearEmbeddings(): void {
-  data.pdf_embeddings.length = 0;
+  const db = getData();
+  db.pdf_embeddings.length = 0;
 }
 
 export function getKidProgress(kidId: number): any {
-  const sessions = data.sessions.filter(s => s.kidId === kidId);
-  const completedTopics = data.completed_topics.filter(ct => ct.kidId === kidId);
+  const db = getData();
+  const sessions = db.sessions.filter(s => s.kidId === kidId);
+  const completedTopics = db.completed_topics.filter(ct => ct.kidId === kidId);
   
   return {
     totalSessions: sessions.length,

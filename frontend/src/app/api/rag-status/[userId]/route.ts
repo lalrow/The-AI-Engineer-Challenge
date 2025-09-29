@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getEmbeddingsCount } from '@/lib/db';
 
 export async function GET(
   request: NextRequest,
@@ -8,16 +7,28 @@ export async function GET(
   try {
     const { userId } = await context.params;
     
-    // Check if we have any embeddings in the database
-    const embeddingsCount = getEmbeddingsCount();
+    // Forward RAG status request to FastAPI backend
+    console.log('[RAG Status] Forwarding to FastAPI backend for userId:', userId);
+    
+    const fastapiResponse = await fetch('http://localhost:8000/api/rag-status', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!fastapiResponse.ok) {
+      throw new Error(`FastAPI error: ${fastapiResponse.status}`);
+    }
+
+    const fastapiResult = await fastapiResponse.json();
+    console.log('[RAG Status] FastAPI response:', fastapiResult);
     
     return NextResponse.json({
-      hasIndex: embeddingsCount > 0,
-      documentsCount: embeddingsCount,
-      status: embeddingsCount > 0 ? "ready" : "empty",
-      message: embeddingsCount > 0 
-        ? `RAG system ready with ${embeddingsCount} document chunks`
-        : "No documents indexed yet. Upload PDFs to get started."
+      has_index: fastapiResult.has_index || false,
+      documentsCount: fastapiResult.documentsCount || 0,
+      status: fastapiResult.status || "empty",
+      message: fastapiResult.message || "No documents indexed yet. Upload PDFs to get started."
     });
     
   } catch (error) {
