@@ -4,11 +4,9 @@ export const runtime = 'nodejs'
 
 export async function POST(req: NextRequest) {
   try {
-    const { question, answer, context } = await req.json()
-    const apiKey = process.env.OPENAI_API_KEY
-    if (!apiKey) {
-      return NextResponse.json({ error: 'Missing OPENAI_API_KEY' }, { status: 500 })
-    }
+    const { question, answer, context, apiKey: keyFromBody } = await req.json()
+    const apiKey = keyFromBody || process.env.OPENAI_API_KEY
+    if (!apiKey) return NextResponse.json({ error: 'Missing OPENAI_API_KEY' }, { status: 400 })
 
     const prompt = `
 Question: ${question}
