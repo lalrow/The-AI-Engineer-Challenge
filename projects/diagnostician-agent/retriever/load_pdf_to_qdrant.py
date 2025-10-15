@@ -83,7 +83,13 @@ def upsert_qdrant(collection: str, payloads: List[dict], vectors: List[List[floa
   from qdrant_client import QdrantClient
   from qdrant_client.models import VectorParams, Distance, PointStruct
 
-  client = QdrantClient(qdrant_url)
+  # Support URL, in-memory, or path-based Qdrant
+  if str(qdrant_url).startswith("http"):
+    client = QdrantClient(url=qdrant_url)
+  elif qdrant_url == ":memory:":
+    client = QdrantClient(location=":memory:")
+  else:
+    client = QdrantClient(path=qdrant_url)
 
   # Create collection if not exists
   try:

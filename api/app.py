@@ -170,15 +170,48 @@ rag_system = None
 
 @app.on_event("startup")
 async def startup_event():
-    """Initialize RAG system with Grade-3 PDFs on startup"""
+    """Initialize persistent Qdrant and auto-ingest bees PDF if empty"""
     global rag_system
-    
-    print("🚀 FastAPI server starting up...")
-    print("📚 RAG system will be initialized when first API key is provided")
-    print("💡 Grade-3 PDFs will auto-upload on first RAG system use")
-    
-    # Note: RAG system initialization is deferred until we have an API key
-    # This will happen automatically on first /api/rag-chat or /api/upload-pdf request
+
+    print("🚀 FastAPI server starting...")
+
+    qdrant_url = os.getenv("QDRANT_URL", "./qdrant_local")
+    collection_name = os.getenv("COLLECTION_NAME", "science_curriculum_g3_g6")
+
+    try:
+        from qdrant_client import QdrantClient
+        # Prefer path-based client for local persistence
+        client = QdrantClient(path=qdrant_url) if qdrant_url != ":memory:" else QdrantClient(location=":memory:")
+
+        try:
+            info = client.get_collection(collection_name=collection_name)
+            vectors_count = getattr(info, 'vectors_count', 0) or 0
+            has_vectors = vectors_count > 0
+        except Exception:
+            has_vectors = False
+
+        if not has_vectors:
+            print("📚 Initializing with Bees PDF ...")
+            # Use retriever loader to ingest bees.pdf into Qdrant
+            bees_pdf_path = os.path.join(os.path.dirname(__file__), "..", "frontend", "public", "pdfs", "grade3", "bees.pdf")
+            # If canonical bees.pdf not present, fall back to any uploaded Bees file
+            if not os.path.exists(bees_pdf_path):
+                uploaded_dir = os.path.join(os.path.dirname(__file__), "..", "frontend", "public", "pdfs", "uploaded")
+                if os.path.isdir(uploaded_dir):
+                    candidates = [f for f in os.listdir(uploaded_dir) if f.lower().endswith('.pdf') and 'bees' in f.lower()]
+                    if candidates:
+                        bees_pdf_path = os.path.join(uploaded_dir, sorted(candidates)[-1])
+
+            cmd = (
+                f'QDRANT_URL="{qdrant_url}" '
+                f'uv run python projects/diagnostician-agent/retriever/load_pdf_to_qdrant.py '
+                f'--pdf "{bees_pdf_path}"'
+            )
+            os.system(cmd)
+        else:
+            print("✅ Qdrant already populated.")
+    except Exception as e:
+        print(f"⚠️  Qdrant startup check failed: {e}")
 
 def load_conversations():
     """Load conversations from file"""
@@ -452,9 +485,14 @@ async def search_qdrant(request: SearchRequest):
         from langchain_openai import OpenAIEmbeddings
         from qdrant_client import QdrantClient
         
-        # Initialize Qdrant client (in-memory for now)
+        # Initialize Qdrant client (supports url, in-memory, or path)
         qdrant_url = os.getenv("QDRANT_URL", ":memory:")
-        client = QdrantClient(qdrant_url)
+        if str(qdrant_url).startswith("http"):
+            client = QdrantClient(url=qdrant_url)
+        elif qdrant_url == ":memory:":
+            client = QdrantClient(location=":memory:")
+        else:
+            client = QdrantClient(path=qdrant_url)
         collection_name = os.getenv("COLLECTION_NAME", "science_curriculum_g3_g6")
         
         # Generate query embedding using langchain-openai
