@@ -1,29 +1,31 @@
 """
-Foundational Diagnostician - Retriever Scaffold
+Foundational Diagnostician - Retriever (AIE8 Sessions 6-10 Compliant)
 
-Loads a PDF, chunks text, embeds with OpenAI, and upserts into an
-in-memory Qdrant collection for quick local experimentation.
+Loads a PDF, chunks text using RecursiveCharacterTextSplitter, embeds with
+langchain-openai, and upserts into Qdrant collection.
 
-Requirements (install if missing):
-  pip install qdrant-client==1.9.* openai==1.* pymupdf
+Requirements:
+  qdrant-client>=1.7,<1.9
+  langchain-openai>=0.3.7,<0.4
+  pymupdf>=1.24.0
 
 ENV:
   OPENAI_API_KEY=<your key>
+  QDRANT_URL=:memory: (default)
+  COLLECTION_NAME=science_curriculum_g3_g6 (default)
 
 Usage:
+  export OPENAI_API_KEY=sk-...
   uv run python projects/diagnostician-agent/retriever/load_pdf_to_qdrant.py \
-    --pdf ./public/pdfs/grade3/bees.pdf \
-    --collection diagnostician-local
+    --pdf ./public/pdfs/grade3/bees.pdf
 """
 
 from __future__ import annotations
 
 import argparse
-import json
 import os
 import sys
-from typing import Iterable, List
-
+from typing import List
 
 def _ensure_deps():
   missing: List[str] = []
@@ -35,10 +37,18 @@ def _ensure_deps():
     import qdrant_client  # type: ignore
   except Exception:
     missing.append("qdrant-client")
+  try:
+    from langchain_openai import OpenAIEmbeddings  # type: ignore
+  except Exception:
+    missing.append("langchain-openai")
+  try:
+    from langchain_text_splitters import RecursiveCharacterTextSplitter  # type: ignore
+  except Exception:
+    missing.append("langchain-text-splitters")
   if missing:
     print(
       "Missing dependencies: " + ", ".join(missing) + "\n"
-      "Install with: pip install qdrant-client==1.9.* pymupdf openai==1.*",
+      "Install with: uv pip install qdrant-client>=1.7,<1.9 langchain-openai>=0.3.7,<0.4 pymupdf",
       file=sys.stderr,
     )
     sys.exit(1)
@@ -54,47 +64,26 @@ def extract_text_from_pdf(pdf_path: str) -> str:
   return "\n".join(p.strip() for p in parts if p and p.strip())
 
 
-def chunk_text(text: str, chunk_size: int = 1000, overlap: int = 100) -> List[str]:
-  words = text.split()
-  chunks: List[str] = []
-  i = 0
-  step = max(1, chunk_size - overlap)
-  while i < len(words):
-    chunk = " ".join(words[i : i + chunk_size]).strip()
-    if chunk:
-      chunks.append(chunk)
-    i += step
-  return chunks
+def chunk_text_with_langchain(text: str) -> List[str]:
+  from langchain_text_splitters import RecursiveCharacterTextSplitter
+  splitter = RecursiveCharacterTextSplitter(chunk_size=600, chunk_overlap=100)
+  return splitter.split_text(text)
 
 
-def embed_texts(texts: Iterable[str], api_key: str) -> List[List[float]]:
-  import urllib.request
-  import urllib.error
-
-  url = "https://api.openai.com/v1/embeddings"
-  headers = {
-    "Authorization": f"Bearer {api_key}",
-    "Content-Type": "application/json",
-  }
-  body = {
-    "model": "text-embedding-3-small",
-    "input": list(texts),
-  }
-  req = urllib.request.Request(url, data=json.dumps(body).encode("utf-8"), headers=headers)
-  try:
-    with urllib.request.urlopen(req) as resp:
-      data = json.loads(resp.read().decode("utf-8"))
-      return [item["embedding"] for item in data.get("data", [])]
-  except urllib.error.HTTPError as e:
-    detail = e.read().decode("utf-8", errors="ignore")
-    raise RuntimeError(f"OpenAI embedding error {e.code}: {detail}")
+def embed_texts_with_langchain(texts: List[str], api_key: str) -> List[List[float]]:
+  from langchain_openai import OpenAIEmbeddings
+  embeddings = OpenAIEmbeddings(
+    model="text-embedding-3-small",
+    openai_api_key=api_key
+  )
+  return [embeddings.embed_query(text) for text in texts]
 
 
-def upsert_qdrant(collection: str, payloads: List[dict], vectors: List[List[float]]):
+def upsert_qdrant(collection: str, payloads: List[dict], vectors: List[List[float]], qdrant_url: str = ":memory:"):
   from qdrant_client import QdrantClient
-  from qdrant_client.http.models import VectorParams, Distance, PointStruct
+  from qdrant_client.models import VectorParams, Distance, PointStruct
 
-  client = QdrantClient(":memory:")
+  client = QdrantClient(qdrant_url)
 
   # Create collection if not exists
   try:
@@ -116,7 +105,6 @@ def main():
   _ensure_deps()
   parser = argparse.ArgumentParser()
   parser.add_argument("--pdf", required=True, help="Path to PDF file")
-  parser.add_argument("--collection", default="diagnostician-local")
   args = parser.parse_args()
 
   api_key = os.getenv("OPENAI_API_KEY")
@@ -124,25 +112,40 @@ def main():
     print("Missing OPENAI_API_KEY in environment", file=sys.stderr)
     sys.exit(1)
 
+  qdrant_url = os.getenv("QDRANT_URL", ":memory:")
+  collection_name = os.getenv("COLLECTION_NAME", "science_curriculum_g3_g6")
+
   if not os.path.exists(args.pdf):
     print(f"PDF not found: {args.pdf}", file=sys.stderr)
     sys.exit(1)
 
+  filename = os.path.basename(args.pdf)
   print(f"[retriever] Extracting text from: {args.pdf}")
   text = extract_text_from_pdf(args.pdf)
   print(f"[retriever] Text length: {len(text)} chars")
 
-  chunks = chunk_text(text)
-  print(f"[retriever] Chunks: {len(chunks)}")
+  print("[retriever] Chunking text with RecursiveCharacterTextSplitter...")
+  chunks = chunk_text_with_langchain(text)
+  print(f"[retriever] Created {len(chunks)} chunks")
 
-  print("[retriever] Generating embeddings...")
-  vectors = embed_texts(chunks, api_key)
-  print(f"[retriever] Received {len(vectors)} vectors")
+  print("[retriever] Generating embeddings with langchain-openai...")
+  vectors = embed_texts_with_langchain(chunks, api_key)
+  print(f"[retriever] Generated {len(vectors)} embeddings")
 
-  payloads = [{"content": c, "source": os.path.basename(args.pdf)} for c in chunks]
-  print(f"[retriever] Upserting into Qdrant collection: {args.collection}")
-  upsert_qdrant(args.collection, payloads, vectors)
-  print("✅ Done")
+  # Metadata structure per AIE8 Sessions
+  payloads = [{
+    "content": chunk,
+    "metadata": {
+      "source": filename,
+      "topic": "pollination",  # TODO: extract from PDF or pass as arg
+      "grade": 3,
+      "strand": "life systems"
+    }
+  } for chunk in chunks]
+
+  print(f"[retriever] Upserting into Qdrant collection: {collection_name}")
+  upsert_qdrant(collection_name, payloads, vectors, qdrant_url)
+  print(f"✅ Ingested {len(chunks)} chunks into {collection_name}")
 
 
 if __name__ == "__main__":

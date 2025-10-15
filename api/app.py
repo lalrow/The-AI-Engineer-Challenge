@@ -303,6 +303,11 @@ class RAGChatRequest(BaseModel):
     api_key: str          # OpenAI API key for authentication
     user_id: str          # User identifier for tracking
 
+class SearchRequest(BaseModel):
+    query: str
+    top_k: int = 4
+    api_key: str
+
 # Define the main chat endpoint that handles POST requests
 @app.post("/api/chat")
 async def chat(request: ChatRequest):
@@ -435,6 +440,47 @@ async def upload_pdf(
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+# Search endpoint for diagnostician (AIE8 Sessions 6-10 compliant)
+@app.post("/api/search")
+async def search_qdrant(request: SearchRequest):
+    """Search Qdrant collection and return top-k chunks"""
+    try:
+        if not request.api_key:
+            raise HTTPException(status_code=400, detail="Missing api_key")
+        
+        from langchain_openai import OpenAIEmbeddings
+        from qdrant_client import QdrantClient
+        
+        # Initialize Qdrant client (in-memory for now)
+        qdrant_url = os.getenv("QDRANT_URL", ":memory:")
+        client = QdrantClient(qdrant_url)
+        collection_name = os.getenv("COLLECTION_NAME", "science_curriculum_g3_g6")
+        
+        # Generate query embedding using langchain-openai
+        embeddings = OpenAIEmbeddings(
+            model="text-embedding-3-small",
+            openai_api_key=request.api_key
+        )
+        query_vector = embeddings.embed_query(request.query)
+        
+        # Search Qdrant collection
+        results = client.search(
+            collection_name=collection_name,
+            query_vector=query_vector,
+            limit=request.top_k
+        )
+        
+        # Format response
+        return [{
+            "text": hit.payload.get("content", ""),
+            "score": hit.score,
+            "metadata": hit.payload.get("metadata", {})
+        } for hit in results]
+        
+    except Exception as e:
+        print(f"Search error: {e}")
+        raise HTTPException(status_code=500, detail=f"Search failed: {str(e)}")
 
 # RAG Chat endpoint
 @app.post("/api/rag-chat")
