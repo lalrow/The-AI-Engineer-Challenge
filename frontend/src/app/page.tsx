@@ -447,14 +447,14 @@ export default function Home() {
             </h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <a 
+              {/* <a 
                 href="/login" 
                 className="bg-blue-500 hover:bg-blue-600 text-white p-4 rounded-xl transition-colors block text-center"
               >
                 <div className="text-2xl mb-2">👶</div>
                 <div className="font-semibold">Kids Login</div>
                 <div className="text-sm opacity-90">Start learning science!</div>
-              </a>
+              </a> */}
               
               <a 
                 href="/read/1" 
@@ -466,7 +466,7 @@ export default function Home() {
           </a>
         </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <a 
                 href="/report/1" 
                 className="bg-purple-500 hover:bg-purple-600 text-white p-4 rounded-xl transition-colors block text-center"
@@ -484,11 +484,11 @@ export default function Home() {
                 <div className="font-semibold">System Health</div>
                 <div className="text-sm opacity-90">Check embeddings status</div>
               </button>
-            </div>
+            </div> */}
           </div>
 
           {/* Admin Section */}
-          <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 mb-8 shadow-xl">
+          {/* <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 mb-8 shadow-xl">
             <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
               <span className="text-2xl">⚙️</span>
               Admin Tools
@@ -535,10 +535,10 @@ export default function Home() {
                 {uploadStatus}
               </div>
             )}
-          </div>
+          </div> */}
 
           {/* API Status Section */}
-          <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 mb-8 shadow-xl">
+          {/* <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 mb-8 shadow-xl">
             <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
               <span className="text-2xl">🔍</span>
               API Status
@@ -566,10 +566,10 @@ export default function Home() {
                 <pre>{healthResponse}</pre>
               </div>
             )}
-          </div>
+          </div> */}
 
           {/* PDF Upload Section */}
-          <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 mb-8 shadow-xl">
+          {/* <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 mb-8 shadow-xl">
             <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
               <span className="text-2xl">📄</span>
               PDF Upload & RAG
@@ -651,10 +651,10 @@ export default function Home() {
                 </div>
               </div>
             </div>
-          </div>
+          </div> */}
 
           {/* API Endpoints Section */}
-          <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 mb-8 shadow-xl">
+          {/* <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 mb-8 shadow-xl">
             <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
               <span className="text-2xl">📡</span>
               Available Endpoints
@@ -720,75 +720,31 @@ export default function Home() {
                 <p className="text-blue-100">Check RAG index status for a user</p>
               </div>
             </div>
-          </div>
+          </div> */}
 
-          {/* Chat Test Section */}
+          {/* OpenAI API Key Section */}
           <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 shadow-xl">
             <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
-              <span className="text-2xl">💬</span>
-              {chatMode === 'rag' ? 'RAG Chat with PDF' : 'Test Chat API'}
+              <span className="text-2xl">🔑</span>
+              OpenAI API Key
             </h2>
             
             <div className="space-y-4">
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-sm font-medium text-blue-100 mb-2">
-                    Your User ID
-                  </label>
-                  <div className="px-4 py-3 rounded-full bg-white/20 border border-white/30 text-white/80 font-mono text-sm">
-                    {userId || 'Generating...'}
-                  </div>
-                  <p className="text-xs text-blue-200 mt-1">
-                    This ID persists across sessions to track your conversations
-                  </p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-blue-100 mb-2">
-                    OpenAI API Key
-                  </label>
-                  <input
-                    type="password"
-                    value={apiKey}
-                    onChange={(e) => setApiKey(e.target.value)}
-                    placeholder="sk-..."
-                    className="w-full px-4 py-3 rounded-full border-0 bg-white/20 text-white placeholder-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  />
-                  <p className="text-xs text-blue-200 mt-1">
-                    Get your API key from <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" className="text-yellow-400 hover:text-yellow-300 underline">OpenAI Platform</a>
-                  </p>
-                </div>
-                <div className="flex gap-4 items-end">
-                  <textarea
-                    value={userMessage}
-                    onChange={(e) => setUserMessage(e.target.value)}
-                    placeholder="Enter your message..."
-                    className="flex-1 px-4 py-3 rounded-lg border-0 bg-white/20 text-white placeholder-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none min-h-[48px] max-h-32"
-                    onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && testChat()}
-                    rows={1}
-                    style={{ height: 'auto' }}
-                    onInput={(e) => {
-                      e.currentTarget.style.height = 'auto';
-                      e.currentTarget.style.height = e.currentTarget.scrollHeight + 'px';
-                    }}
-                  />
-                  <button
-                    onClick={chatMode === 'rag' ? ragChat : testChat}
-                    disabled={isLoading}
-                    className="px-6 py-3 bg-green-500 hover:bg-green-600 disabled:bg-gray-500 rounded-full font-medium transition-colors flex-shrink-0"
-                  >
-                    {isLoading ? 'Sending...' : 'Send Message'}
-                  </button>
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-blue-100 mb-2">
+                  Enter Your API Key
+                </label>
+                <input
+                  type="password"
+                  value={apiKey}
+                  onChange={(e) => setApiKey(e.target.value)}
+                  placeholder="sk-..."
+                  className="w-full px-4 py-3 rounded-full border-0 bg-white/20 text-white placeholder-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                />
+                <p className="text-xs text-blue-200 mt-1">
+                  Get your API key from <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" className="text-yellow-400 hover:text-yellow-300 underline">OpenAI Platform</a>
+                </p>
               </div>
-
-              {chatResponse && (
-                <div className="bg-black/20 p-4 rounded-lg">
-                  <h3 className="font-semibold mb-2">Response:</h3>
-                  <pre className="whitespace-pre-wrap font-mono text-sm overflow-x-auto">
-                    {chatResponse}
-                  </pre>
-                </div>
-              )}
             </div>
           </div>
 
