@@ -40,6 +40,25 @@ This branch transforms the application into a comprehensive Kids Science Tutor w
 
 ## Merge Options
 
+### New Branch: feature/certification-challenge
+
+This branch introduces the Certification Challenge scaffold alongside existing work:
+- Adds `projects/diagnostician-agent/` with `graph/`, `retriever/`, `eval/`, `tests/`, and `README.md`.
+- Adds Next.js API route `frontend/src/app/api/diagnostician/route.ts`.
+- Adds minimal quiz UI `frontend/src/app/quiz/page.tsx`.
+
+Create a PR targeting `main`:
+```bash
+git push origin feature/certification-challenge
+gh pr create --base main --head feature/certification-challenge \
+  --title "Certification Challenge: diagnostician scaffold" \
+  --body "Adds diagnostician agent scaffold with API and quiz page."
+```
+Merge via GitHub UI or:
+```bash
+gh pr merge --squash --auto
+```
+
 ### Option 1: GitHub Pull Request (Recommended)
 
 #### Step 1: Push the feature branch
