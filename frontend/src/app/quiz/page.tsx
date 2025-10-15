@@ -2,11 +2,19 @@
 
 import React from 'react'
 
+const QUESTIONS = [
+  { id: 1, text: 'What is pollination?' },
+  { id: 2, text: 'What do bees collect from flowers?' },
+  { id: 3, text: 'Why are roots important to plants?' },
+  { id: 4, text: 'What is photosynthesis?' },
+  { id: 5, text: 'How do plants make their own food?' }
+]
+
 export default function QuizPage() {
   const [apiKey, setApiKey] = React.useState<string>('')
-  const [question, setQuestion] = React.useState('What is pollination?')
+  const [selectedQuestion, setSelectedQuestion] = React.useState(QUESTIONS[0].text)
   const [answer, setAnswer] = React.useState('')
-  const [result, setResult] = React.useState<any>(null)
+  const [feedback, setFeedback] = React.useState<string>('')
   const [submitting, setSubmitting] = React.useState(false)
 
   React.useEffect(() => {
@@ -16,77 +24,96 @@ export default function QuizPage() {
     } catch {}
   }, [])
 
-  const handleSaveKey = () => {
+  const handleSubmit = async () => {
+    if (!apiKey || !answer.trim()) {
+      setFeedback('Error: Please provide API key and answer')
+      return
+    }
+
+    setSubmitting(true)
+    setFeedback('')
     try {
       localStorage.setItem('openai_api_key', apiKey)
-      alert('API key saved locally for this browser.')
-    } catch (e) {
-      console.error(e)
-    }
-  }
-
-  const handleSubmit = async () => {
-    setSubmitting(true)
-    setResult(null)
-    try {
+      
       const res = await fetch('/api/diagnostician', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question, answer, apiKey })
+        body: JSON.stringify({ question: selectedQuestion, answer, apiKey })
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data?.error || 'Failed')
-      setResult(data)
+      
+      const score = data.evaluation?.score ?? 'N/A'
+      const text = data.evaluation?.feedback ?? 'No feedback'
+      setFeedback(`Score: ${score}\n\n${text}`)
     } catch (e: any) {
-      setResult({ error: e?.message || String(e) })
+      setFeedback(`Error: ${e?.message || String(e)}`)
     } finally {
       setSubmitting(false)
     }
   }
 
   return (
-    <div style={{ maxWidth: 720, margin: '2rem auto', padding: '1rem' }}>
-      <h1>Foundational Skill Diagnostician</h1>
-      <fieldset style={{ border: '1px solid #ddd', padding: '0.75rem', marginBottom: '1rem' }}>
-        <legend>OpenAI API Key</legend>
+    <div style={{ maxWidth: 600, margin: '2rem auto', padding: '1rem', fontFamily: 'sans-serif' }}>
+      <h1 style={{ fontSize: '1.5rem', marginBottom: '1.5rem' }}>Foundational Skill Diagnostician</h1>
+      
+      <div style={{ marginBottom: '1rem' }}>
+        <label style={{ display: 'block', marginBottom: '0.25rem' }}>OpenAI API Key</label>
         <input
           type="password"
           placeholder="sk-..."
           value={apiKey}
           onChange={e => setApiKey(e.target.value)}
-          style={{ width: '100%' }}
+          style={{ width: '100%', padding: '0.5rem', border: '1px solid #ccc' }}
         />
-        <button onClick={handleSaveKey} style={{ marginTop: '0.5rem' }}>Save Key</button>
-      </fieldset>
-      <label>Question</label>
-      <textarea value={question} onChange={e => setQuestion(e.target.value)} rows={3} style={{ width: '100%' }} />
-      <label>Your Answer</label>
-      <textarea value={answer} onChange={e => setAnswer(e.target.value)} rows={3} style={{ width: '100%' }} />
-      <button onClick={handleSubmit} disabled={submitting} style={{ marginTop: '1rem' }}>
-        {submitting ? 'Evaluating…' : 'Evaluate'}
+      </div>
+
+      <div style={{ marginBottom: '1rem' }}>
+        <label style={{ display: 'block', marginBottom: '0.25rem' }}>Select Question</label>
+        <select 
+          value={selectedQuestion}
+          onChange={e => setSelectedQuestion(e.target.value)}
+          style={{ width: '100%', padding: '0.5rem', border: '1px solid #ccc' }}
+        >
+          {QUESTIONS.map(q => (
+            <option key={q.id} value={q.text}>{q.text}</option>
+          ))}
+        </select>
+      </div>
+
+      <div style={{ marginBottom: '1rem' }}>
+        <label style={{ display: 'block', marginBottom: '0.25rem' }}>Your Answer</label>
+        <textarea
+          value={answer}
+          onChange={e => setAnswer(e.target.value)}
+          rows={4}
+          style={{ width: '100%', padding: '0.5rem', border: '1px solid #ccc' }}
+          placeholder="Type your answer here..."
+        />
+      </div>
+
+      <button
+        onClick={handleSubmit}
+        disabled={submitting}
+        style={{ 
+          padding: '0.5rem 1.5rem', 
+          border: '1px solid #333', 
+          background: '#fff', 
+          cursor: submitting ? 'not-allowed' : 'pointer' 
+        }}
+      >
+        {submitting ? 'Evaluating...' : 'Submit'}
       </button>
-      {result && (
-        <div style={{ marginTop: '1rem' }}>
-          {result.error ? (
-            <pre style={{ background: '#fee', padding: '1rem', whiteSpace: 'pre-wrap' }}>Error: {result.error}</pre>
-          ) : (
-            <>
-              <div style={{ background: '#f5f5f5', padding: '1rem', marginBottom: '1rem' }}>
-                <strong>Score:</strong> {result.evaluation?.score ?? 'N/A'}<br />
-                <strong>Feedback:</strong> {result.evaluation?.feedback ?? 'N/A'}
-              </div>
-              {result.sources && result.sources.length > 0 && (
-                <div>
-                  <h3>Sources</h3>
-                  {result.sources.map((s: any, i: number) => (
-                    <div key={i} style={{ background: '#fafafa', padding: '0.5rem', marginBottom: '0.5rem', fontSize: '0.9em' }}>
-                      <strong>Score: {s.score.toFixed(2)}</strong> - {s.text.substring(0, 100)}...
-                    </div>
-                  ))}
-                </div>
-              )}
-            </>
-          )}
+
+      {feedback && (
+        <div style={{ marginTop: '1.5rem' }}>
+          <label style={{ display: 'block', marginBottom: '0.25rem' }}>Feedback</label>
+          <textarea
+            readOnly
+            value={feedback}
+            rows={8}
+            style={{ width: '100%', padding: '0.5rem', border: '1px solid #ccc', background: '#f9f9f9' }}
+          />
         </div>
       )}
     </div>
