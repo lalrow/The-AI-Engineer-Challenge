@@ -244,8 +244,16 @@ export function getKidQuizHistory(kidId: number): QuizQuestion[] {
 }
 
 // Topic Management Functions
-export function getAvailableTopics(kidId: number): PDFMetadata[] {
-  // Get all PDFs that haven't been completed by this kid
+export function getAvailableTopics(kidId: number): PDFMetadata[];
+export function getAvailableTopics(): PDFMetadata | null;
+export function getAvailableTopics(kidId?: number): PDFMetadata[] | PDFMetadata | null {
+  // Overload: no kidId - return any single topic
+  if (kidId === undefined) {
+    const allTopics = getData().pdf_metadata;
+    return allTopics.length > 0 ? allTopics[0] : null;
+  }
+  
+  // Original: with kidId - return uncompleted topics for that kid
   const completedTopics = getData().completed_topics
     .filter(ct => ct.kidId === kidId)
     .map(ct => `${ct.topic}-${ct.subtopic}`);
