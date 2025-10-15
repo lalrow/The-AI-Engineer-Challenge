@@ -192,20 +192,23 @@ async def startup_event():
 
         if not has_vectors:
             print("📚 Initializing with Bees PDF ...")
-            # Use retriever loader to ingest bees.pdf into Qdrant
-            bees_pdf_path = os.path.join(os.path.dirname(__file__), "..", "frontend", "public", "pdfs", "grade3", "bees.pdf")
+            # Resolve absolute repo root and script/data paths
+            repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+            retriever_script = os.path.join(repo_root, "projects", "diagnostician-agent", "retriever", "load_pdf_to_qdrant.py")
+            bees_pdf_path = os.path.join(repo_root, "frontend", "public", "pdfs", "grade3", "bees.pdf")
             # If canonical bees.pdf not present, fall back to any uploaded Bees file
             if not os.path.exists(bees_pdf_path):
-                uploaded_dir = os.path.join(os.path.dirname(__file__), "..", "frontend", "public", "pdfs", "uploaded")
+                uploaded_dir = os.path.join(repo_root, "frontend", "public", "pdfs", "uploaded")
                 if os.path.isdir(uploaded_dir):
                     candidates = [f for f in os.listdir(uploaded_dir) if f.lower().endswith('.pdf') and 'bees' in f.lower()]
                     if candidates:
                         bees_pdf_path = os.path.join(uploaded_dir, sorted(candidates)[-1])
 
+            # Pass env explicitly to avoid missing key in subshell
+            openai_key = os.getenv("OPENAI_API_KEY", "")
             cmd = (
-                f'QDRANT_URL="{qdrant_url}" '
-                f'uv run python projects/diagnostician-agent/retriever/load_pdf_to_qdrant.py '
-                f'--pdf "{bees_pdf_path}"'
+                f'QDRANT_URL="{qdrant_url}" OPENAI_API_KEY="{openai_key}" '
+                f'uv run python "{retriever_script}" --pdf "{bees_pdf_path}"'
             )
             os.system(cmd)
         else:
