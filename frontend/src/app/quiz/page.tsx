@@ -56,11 +56,12 @@ export default function QuizPage() {
         agentResponse = { evaluation: 'N/A', feedback: data.data || 'No feedback' }
       }
       
+      const score = agentResponse.score ?? 'N/A'
       const evaluation = agentResponse.evaluation || 'N/A'
       const nextStep = agentResponse.next_step || ''
       const feedbackText = agentResponse.feedback || 'No feedback'
       
-      let displayText = `Evaluation: ${evaluation}\n\n${feedbackText}`
+      let displayText = `Score: ${score}\n\nEvaluation: ${evaluation}\n\n${feedbackText}`
       if (nextStep) {
         displayText += `\n\nNext Step: ${nextStep}`
       }
