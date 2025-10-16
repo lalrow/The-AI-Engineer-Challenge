@@ -43,9 +43,25 @@ export default function QuizPage() {
       const data = await res.json()
       if (!res.ok) throw new Error(data?.error || 'Failed')
       
-      const score = data.evaluation?.score ?? 'N/A'
-      const text = data.evaluation?.feedback ?? 'No feedback'
-      setFeedback(`Score: ${score}\n\n${text}`)
+      // Parse the new backend response format
+      let agentResponse
+      try {
+        // The backend returns { success, data, meta } where data is the agent's JSON string
+        agentResponse = typeof data.data === 'string' ? JSON.parse(data.data) : data.data
+      } catch {
+        // Fallback if parsing fails
+        agentResponse = { evaluation: 'N/A', feedback: data.data || 'No feedback' }
+      }
+      
+      const evaluation = agentResponse.evaluation || 'N/A'
+      const nextStep = agentResponse.next_step || ''
+      const feedbackText = agentResponse.feedback || 'No feedback'
+      
+      let displayText = `Evaluation: ${evaluation}\n\n${feedbackText}`
+      if (nextStep) {
+        displayText += `\n\nNext Step: ${nextStep}`
+      }
+      setFeedback(displayText)
     } catch (e: any) {
       setFeedback(`Error: ${e?.message || String(e)}`)
     } finally {
