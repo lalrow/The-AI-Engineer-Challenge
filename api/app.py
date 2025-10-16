@@ -6,6 +6,7 @@ from pydantic import BaseModel
 # Import OpenAI client for interacting with OpenAI's API
 from openai import OpenAI
 import os
+import sys
 import time
 import json
 from typing import Optional
@@ -17,6 +18,10 @@ from typing import List, Dict, Any
 from langchain_community.document_loaders import PyMuPDFLoader
 from langchain_text_splitters import CharacterTextSplitter
 # No need for dotenv - just use os.getenv directly
+
+# Add project root to Python path for backend imports
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+from backend.agent.diagnostician_agent import build_graph_with_api_key
 
 # Get OpenAI API key from environment variable
 DEFAULT_OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "test-key")
@@ -344,6 +349,12 @@ class SearchRequest(BaseModel):
     top_k: int = 4
     api_key: str
 
+class EvaluateRequest(BaseModel):
+    question: str
+    answer: str
+    context: Optional[str] = ""
+    api_key: str
+
 # Define the main chat endpoint that handles POST requests
 @app.post("/api/chat")
 async def chat(request: ChatRequest):
@@ -522,6 +533,39 @@ async def search_qdrant(request: SearchRequest):
     except Exception as e:
         print(f"Search error: {e}")
         raise HTTPException(status_code=500, detail=f"Search failed: {str(e)}")
+
+@app.post("/api/evaluate")
+async def evaluate_answer(request: EvaluateRequest):
+    """Evaluate student answer using diagnostician agent"""
+    try:
+        if not request.api_key:
+            raise HTTPException(status_code=400, detail="Missing api_key")
+        
+        # Build agent graph with provided API key
+        agent_graph = build_graph_with_api_key(request.api_key)
+        
+        # Invoke agent
+        result = agent_graph.invoke({
+            "question": request.question,
+            "answer": request.answer,
+            "context": request.context,
+            "api_key": request.api_key
+        })
+        
+        # Return structured response
+        return {
+            "success": True,
+            "data": result["agent_response"],
+            "meta": {
+                "model": "gpt-4o-mini",
+                "type": "diagnostician_agent",
+                "version": "v1"
+            }
+        }
+        
+    except Exception as e:
+        print(f"Evaluation error: {e}")
+        raise HTTPException(status_code=500, detail=f"Evaluation failed: {str(e)}")
 
 # RAG Chat endpoint
 @app.post("/api/rag-chat")

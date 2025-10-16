@@ -1,7 +1,6 @@
 from langchain_openai import ChatOpenAI
 from langgraph.graph import StateGraph, END
-
-llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.2)
+import os
 
 
 def diagnose_node(state):
@@ -9,6 +8,14 @@ def diagnose_node(state):
     question = state.get("question", "")
     answer = state.get("answer", "")
     context = state.get("context", "")
+    api_key = state.get("api_key")
+    
+    # Use provided API key or fall back to environment variable
+    llm = ChatOpenAI(
+        model="gpt-4o-mini", 
+        temperature=0.2,
+        api_key=api_key if api_key else os.getenv("OPENAI_API_KEY")
+    )
 
     prompt = f"""
     You are a science diagnostician agent.
@@ -24,6 +31,7 @@ def diagnose_node(state):
 
 
 def build_graph():
+    """Build graph with environment-based API key (backward compatibility)"""
     graph = StateGraph(dict)
     graph.add_node("diagnose", diagnose_node)
     graph.set_entry_point("diagnose")
@@ -31,4 +39,14 @@ def build_graph():
     return graph.compile()
 
 
+def build_graph_with_api_key(api_key: str):
+    """Build graph with explicit API key"""
+    graph = StateGraph(dict)
+    graph.add_node("diagnose", diagnose_node)
+    graph.set_entry_point("diagnose")
+    graph.add_edge("diagnose", END)
+    return graph.compile()
+
+
+# Keep for backward compatibility
 agent_graph = build_graph()
