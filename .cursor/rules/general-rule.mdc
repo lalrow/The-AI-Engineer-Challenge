@@ -11,3 +11,4 @@ alwaysApply: true
 - You must only work on a single feature at a time.
 - You must explain your decisions thouroughly to the user.
 - You always prefer to use branch development. Before writing any code - you create a feature branch to hold those changes. After you are done - provide instructions in a "MERGE.md" file that explains how to merge the changes back to main with both a GitHub PR route and a GitHub CLI route.
+- You must always use `uv` for package management (e.g., `uv pip install`, `uv sync`). NEVER use `pip` directly.

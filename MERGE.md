@@ -38,102 +38,21 @@ This branch transforms the application into a comprehensive Kids Science Tutor w
 - ✅ **Error Handling**: Comprehensive logging and error recovery
 - ✅ **UI Fixes**: Quiz option text visibility, responsive design improvements
 
-## Merge Options
+## Merge Instructions
 
-### New Branch: feature/certification-challenge
+### GitHub PR Route
 
-This branch introduces the Certification Challenge scaffold alongside existing work:
-- Adds `projects/diagnostician-agent/` with `graph/`, `retriever/`, `eval/`, `tests/`, and `README.md`.
-- Adds Next.js API route `frontend/src/app/api/diagnostician/route.ts`.
-- Adds minimal quiz UI `frontend/src/app/quiz/page.tsx`.
+1. Commit your changes: `git commit -m "feat: Implement diagnostician agent"`
+2. Push your branch: `git push origin <your-branch-name>`
+3. Create a Pull Request on GitHub targeting the `main` branch.
+4. Request a review and merge once approved.
 
-Create a PR targeting `main`:
-```bash
-git push origin feature/certification-challenge
-gh pr create --base main --head feature/certification-challenge \
-  --title "Certification Challenge: diagnostician scaffold" \
-  --body "Adds diagnostician agent scaffold with API and quiz page."
-```
-Merge via GitHub UI or:
-```bash
-gh pr merge --squash --auto
-```
+### GitHub CLI Route
 
-### Option 1: GitHub Pull Request (Recommended)
-
-#### Step 1: Push the feature branch
-```bash
-git push origin feature/rag-persistence-and-bees
-```
-
-#### Step 2: Create Pull Request
-1. Go to your GitHub repository
-2. Click "Compare & pull request" for the `feature/rag-persistence-and-bees` branch
-3. Fill in the PR details:
-- **Title**: "FastAPI RAG: PyMuPDFLoader, JSON index persistence, Next.js forwarding"
-- **Description**: Copy the changes summary from above
-4. Assign reviewers if needed
-5. Click "Create pull request"
-
-#### Step 3: Review and Merge
-1. Review the changes in the GitHub interface
-2. Run any automated tests/checks
-3. Click "Merge pull request" 
-4. Choose merge type:
-   - **"Create a merge commit"** - Preserves branch history
-   - **"Squash and merge"** - Combines all commits into one clean commit
-   - **"Rebase and merge"** - Replays commits without merge commit
-5. Confirm the merge
-6. Delete the feature branch after successful merge
-
-### Option 2: GitHub CLI (Command Line)
-
-#### Prerequisites
-```bash
-# Install GitHub CLI if not already installed
-# https://cli.github.com/
-
-# Authenticate with GitHub
-gh auth login
-```
-
-#### Step 1: Push and create PR
-```bash
-# Push the feature branch
-git push origin feature/rag-persistence-and-bees
-
-# Create pull request via CLI
-gh pr create \
-  --title "FastAPI RAG: PyMuPDFLoader, JSON index persistence, Next.js forwarding" \
-  --body "Consolidate RAG in FastAPI, switch to PyMuPDFLoader, add CharacterTextSplitter, persist RAG state to /tmp/rag_index.json (no SQLite), and forward Next.js API routes to FastAPI for upload/status/chat." \
-  --base main \
-  --head feature/rag-persistence-and-bees
-```
-
-#### Step 2: Review and merge via CLI
-```bash
-# View the PR
-gh pr view
-
-# Merge the PR (choose one option):
-# Option A: Merge commit
-gh pr merge --merge
-
-# Option B: Squash merge (recommended for feature branches)
-gh pr merge --squash
-
-# Option C: Rebase merge
-gh pr merge --rebase
-```
-
-#### Step 3: Cleanup
-```bash
-# Delete the feature branch locally
-git branch -d feature/rag-persistence-and-bees
-
-# Delete the remote feature branch
-git push origin --delete feature/rag-persistence-and-bees
-```
+1. Commit your changes: `git commit -m "feat: Implement diagnostician agent"`
+2. Push your branch: `git push origin <your-branch-name>`
+3. Create a Pull Request using the GitHub CLI: `gh pr create --base main --head <your-branch-name> --title "feat: Implement diagnostician agent" --body "This PR implements the diagnostician agent as per the task requirements."`
+4. Merge the PR: `gh pr merge <PR-number> --merge`
 
 ## Post-Merge Verification
 

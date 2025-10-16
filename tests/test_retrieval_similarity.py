@@ -2,8 +2,10 @@ import os
 import requests
 import numpy as np
 from openai import OpenAI
+from dotenv import load_dotenv
 
 # === Load environment and reference answers ===
+load_dotenv()
 API_KEY = os.getenv("OPENAI_API_KEY")
 BASELINE = open("tests/baseline_answer.txt").read().strip()
 GROUND_TRUTH = open("tests/grounded_answer.txt").read().strip()
