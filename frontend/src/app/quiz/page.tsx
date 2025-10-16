@@ -47,7 +47,10 @@ export default function QuizPage() {
       let agentResponse
       try {
         // The backend returns { success, data, meta } where data is the agent's JSON string
-        agentResponse = typeof data.data === 'string' ? JSON.parse(data.data) : data.data
+        let responseText = typeof data.data === 'string' ? data.data : JSON.stringify(data.data)
+        // Strip markdown code fences if present
+        responseText = responseText.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim()
+        agentResponse = JSON.parse(responseText)
       } catch {
         // Fallback if parsing fails
         agentResponse = { evaluation: 'N/A', feedback: data.data || 'No feedback' }
