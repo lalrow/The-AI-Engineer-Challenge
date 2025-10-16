@@ -17,13 +17,19 @@ def diagnose_node(state):
         api_key=api_key if api_key else os.getenv("OPENAI_API_KEY")
     )
 
-    prompt = f"""
-    You are a science diagnostician agent.
-    Student Question: {question}
-    Student Answer: {answer}
-    Context: {context}
-    Return JSON with fields: 'score' (0.0-1.0), 'evaluation', 'next_step', 'feedback'.
-    """
+    prompt = f"""You are a science diagnostician agent. Evaluate the student's answer and return ONLY valid JSON (no markdown).
+
+Student Question: {question}
+Student Answer: {answer}
+Context: {context}
+
+Return this exact JSON structure:
+{{
+  "score": <float between 0.0 and 1.0>,
+  "evaluation": "<brief assessment>",
+  "next_step": "<suggested follow-up question or activity>",
+  "feedback": "<constructive feedback for the student>"
+}}"""
 
     result = llm.invoke(prompt)
     state["agent_response"] = result.content
