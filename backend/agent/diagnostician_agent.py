@@ -22,7 +22,7 @@ def diagnose_node(state):
     Student Question: {question}
     Student Answer: {answer}
     Context: {context}
-    Return JSON with fields: 'evaluation', 'next_step', 'feedback'.
+    Return JSON with fields: 'score' (0.0-1.0), 'evaluation', 'next_step', 'feedback'.
     """
 
     result = llm.invoke(prompt)
