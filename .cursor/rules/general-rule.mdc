@@ -14,8 +14,16 @@ alwaysApply: true
 - You must always use `uv` for package management (e.g., `uv pip install`, `uv sync`). NEVER use `pip` directly.
 - You must always load environment variables from the `.env` file before running or testing any backend code. This prevents missing `OPENAI_API_KEY`, `QDRANT_URL`, and other keys.
 - You must never use a dummy API key such as `"test-api-key"` or `"DUMMY_API_KEY"`. Always use the real `OPENAI_API_KEY` from `.env` to ensure evaluation and retrieval behave consistently.
-- You must use the latest `bees` PDF found under `frontend/public/pdfs/uploaded/` as the default dataset. If multiple `Bees_and_Pollination.pdf` files exist, always use the newest one by timestamp.
+- You must use the latest `bees` PDF found under `/public/pdfs/grade3/` as the default dataset. If multiple `Bees_and_Pollination.pdf` files exist, always use the newest one by timestamp.
 - You must always ensure that the Qdrant vector database (`qdrant_local`) is populated with content from `/home/lalit/workspace/code/The-AI-Engineer-Challenge/public/pdfs/grade3` before running any retrieval or evaluation tests. If the collection is empty, you must load the PDFs from this directory using the script `projects/diagnostician-agent/retriever/load_pdf_to_qdrant.py`.
 - You must always start the backend (`uv run python api/app.py`) before running integration tests that call `/api/search` or `/api/evaluate`.
 - You must always use `uv` for environment management and testing (e.g., `uv sync --extra dev`, `uv run pytest`), never `pip` directly.
+- You must always treat this MDC file as the single source of truth for Qdrant configuration. Cursor must read this MDC before editing or executing any Qdrant-related code.
+- You must always use one local persistent Qdrant instance (for example, http://localhost:6333) — never :memory:, Docker, or cloud URLs.
+- You must always ensure that the same QDRANT_URL value is used in projects/diagnostician-agent/retriever/load_pdf_to_qdrant.py, backend/api/app.py, and all test files that use Qdrant.
+- You must always stop and display a clear message if any mismatch is detected:
+“QDRANT_URL mismatch detected between loader, backend, and tests. Unify configuration using .env and this MDC.”
+- You must always run all tests using uv run pytest -v. If there are more than 20 test files, Cursor must ask:
+“There are more than 20 test files. Do you want to run all, or just key suites (retrieval, evaluation, diagnoser)?”
+- You must always summarize test results clearly after execution, showing passed, failed, and suggested next steps (rerun suite, fix env, reload PDFs).
 
