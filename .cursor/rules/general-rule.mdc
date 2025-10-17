@@ -12,3 +12,10 @@ alwaysApply: true
 - You must explain your decisions thouroughly to the user.
 - You always prefer to use branch development. Before writing any code - you create a feature branch to hold those changes. After you are done - provide instructions in a "MERGE.md" file that explains how to merge the changes back to main with both a GitHub PR route and a GitHub CLI route.
 - You must always use `uv` for package management (e.g., `uv pip install`, `uv sync`). NEVER use `pip` directly.
+- You must always load environment variables from the `.env` file before running or testing any backend code. This prevents missing `OPENAI_API_KEY`, `QDRANT_URL`, and other keys.
+- You must never use a dummy API key such as `"test-api-key"` or `"DUMMY_API_KEY"`. Always use the real `OPENAI_API_KEY` from `.env` to ensure evaluation and retrieval behave consistently.
+- You must use the latest `bees` PDF found under `frontend/public/pdfs/uploaded/` as the default dataset. If multiple `Bees_and_Pollination.pdf` files exist, always use the newest one by timestamp.
+- You must always ensure that the Qdrant vector database (`qdrant_local`) is populated with content from `/home/lalit/workspace/code/The-AI-Engineer-Challenge/public/pdfs/grade3` before running any retrieval or evaluation tests. If the collection is empty, you must load the PDFs from this directory using the script `projects/diagnostician-agent/retriever/load_pdf_to_qdrant.py`.
+- You must always start the backend (`uv run python api/app.py`) before running integration tests that call `/api/search` or `/api/evaluate`.
+- You must always use `uv` for environment management and testing (e.g., `uv sync --extra dev`, `uv run pytest`), never `pip` directly.
+

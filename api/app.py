@@ -9,6 +9,8 @@ import os
 import sys
 import time
 import json
+import uuid # Added for generating thread_id
+import subprocess # Added for subprocess.run
 from typing import Optional
 from fastapi.responses import StreamingResponse
 import io
@@ -211,11 +213,20 @@ async def startup_event():
 
             # Pass env explicitly to avoid missing key in subshell
             openai_key = os.getenv("OPENAI_API_KEY", "")
-            cmd = (
-                f'QDRANT_URL="{qdrant_url}" OPENAI_API_KEY="{openai_key}" '
-                f'uv run python "{retriever_script}" --pdf "{bees_pdf_path}"'
-            )
-            os.system(cmd)
+            cmd_list = [
+                "uv", "run", "python", f"{retriever_script}", "--pdf", f"{bees_pdf_path}"
+            ]
+            env = os.environ.copy()
+            env["QDRANT_URL"] = qdrant_url
+            env["OPENAI_API_KEY"] = openai_key
+
+            print(f"Executing command: {' '.join(cmd_list)}")
+            process = subprocess.run(cmd_list, env=env, capture_output=True, text=True)
+            if process.returncode != 0:
+                print(f"❌ Error populating Qdrant: {process.stderr}", file=sys.stderr)
+                raise Exception(f"Qdrant population failed: {process.stderr}")
+            else:
+                print(f"✅ Qdrant population script output: {process.stdout}")
         else:
             print("✅ Qdrant already populated.")
     except Exception as e:
@@ -536,33 +547,44 @@ async def search_qdrant(request: SearchRequest):
 
 @app.post("/api/evaluate")
 async def evaluate_answer(request: EvaluateRequest):
-    """Evaluate student answer using diagnostician agent"""
+    """Evaluate student answer using always-on Agentic Diagnostician Agent"""
     try:
         if not request.api_key:
             raise HTTPException(status_code=400, detail="Missing api_key")
-        
-        # Build agent graph with provided API key
+
         agent_graph = build_graph_with_api_key(request.api_key)
-        
-        # Invoke agent
-        result = agent_graph.invoke({
+
+        state = {
             "question": request.question,
             "answer": request.answer,
-            "context": request.context,
-            "api_key": request.api_key
-        })
-        
-        # Return structured response
+            "context": request.context or "",
+            "api_key": request.api_key,
+        }
+
+        result = agent_graph.invoke(state, config={"configurable": {"thread_id": str(uuid.uuid4())}})
+        agent_output = result.get("agent_response", {})
+
+        if not isinstance(agent_output, dict):
+            try:
+                agent_output = json.loads(agent_output)
+            except Exception:
+                agent_output = {
+                    "score": 0.0,
+                    "evaluation": "Malformed output from LLM.",
+                    "next_step": "Retry with more context.",
+                    "feedback": "Output could not be parsed to JSON."
+                }
+
         return {
             "success": True,
-            "data": result["agent_response"],
+            "data": agent_output,
             "meta": {
                 "model": "gpt-4o-mini",
-                "type": "diagnostician_agent",
-                "version": "v1"
+                "agent": "diagnostician",
+                "version": "v2"
             }
         }
-        
+
     except Exception as e:
         print(f"Evaluation error: {e}")
         raise HTTPException(status_code=500, detail=f"Evaluation failed: {str(e)}")

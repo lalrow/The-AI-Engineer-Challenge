@@ -1,0 +1,27 @@
+#!/bin/bash
+# 🧠 Cursor Preflight — Verify & Auto-Initialize Local Qdrant
+
+echo "🚦 Checking Qdrant local collection..."
+
+# 1️⃣ Ensure directory exists
+if [ ! -d "./qdrant_local" ]; then
+  echo "⚠️ No qdrant_local directory found. Creating and loading PDFs..."
+  mkdir -p ./qdrant_local
+  uv run python projects/diagnostician-agent/retriever/load_pdf_to_qdrant.py
+else
+  uv run python - <<'PYCODE'
+import os
+from qdrant_client import QdrantClient
+qpath = os.getenv("QDRANT_URL", "./qdrant_local")
+client = QdrantClient(path=qpath)
+try:
+    info = client.get_collection("science_curriculum_g3_g6")
+    print(f"✅ Qdrant collection found with {info.vectors_count} vectors.")
+except Exception:
+    print("🔁 Collection missing — reloading PDFs...")
+    from projects.diagnostician_agent.retriever.load_pdf_to_qdrant import load_pdfs
+    load_pdfs()
+PYCODE
+fi
+
+echo "✅ Qdrant preflight completed successfully."
