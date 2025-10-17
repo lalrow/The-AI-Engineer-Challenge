@@ -1,100 +1,157 @@
-# MERGE Instructions - Kids Science Tutor with Persistent RAG
+# Merge Instructions: RAGAS Evaluation Integration
 
 ## Branch Information
-- **Feature Branch**: `feature/rag-persistence-and-bees`
-- **Target Branch**: `main`
-- **Purpose**: FastAPI-based RAG flow (no SQLite), PyMuPDFLoader PDF parsing, OpenAI embeddings, state persisted via JSON index, Next.js API → FastAPI forwarding
+- **Feature Branch:** `feature/certification-challenge`
+- **Target Branch:** `main`
+- **Feature:** RAGAS-based evaluation framework for Diagnostician Agent
 
-## Changes Summary
-This branch transforms the application into a comprehensive Kids Science Tutor with persistent RAG functionality:
+## What Was Added
 
-### Backend (FastAPI) & RAG Changes
-- ✅ **FastAPI RAG Backend**: Consolidated RAG to Python FastAPI (`api/app.py`)
-- ✅ **PDF Parsing with PyMuPDFLoader**: Robust text extraction via LangChain `PyMuPDFLoader`
-- ✅ **Chunking**: `CharacterTextSplitter` for clean, overlapping chunks
-- ✅ **OpenAI Embeddings**: Uses `text-embedding-3-small`
-- ✅ **State Persistence (No SQLite)**: RAG documents + embeddings saved/loaded via JSON index at `/tmp/rag_index.json` (`save_state`/`load_state`)
-- ✅ **Next.js → FastAPI**: Frontend API routes forward to FastAPI for upload, status, and chat
-- ✅ **Env-based API Key**: Reads `OPENAI_API_KEY` from environment
+This feature adds comprehensive RAGAS evaluation to quantify RAG pipeline quality using Session 8 methodology:
 
-### Kids Science Tutor Features
-- ✅ **Kid Login System**: Name + PIN authentication (`/login`)
-- ✅ **Reading Sessions**: Dynamic content from vector search, 30-line chunks, 5-minute timer
-- ✅ **Adaptive Quizzing**: OpenAI-generated questions from PDF content, tracks previous questions
-- ✅ **Progress Tracking**: Topics completed, quiz scores, session history
-- ✅ **Parent Reports**: Comprehensive progress dashboard (`/report/[kidId]`)
-- ✅ **10 Grade-3 Science PDFs**: Auto-generated content (Planets, Constellations, Rocks, etc.)
+### Files Added
+- `tests/evals/baseline_eval.csv` - 5 minimal answer examples for baseline evaluation
+- `tests/evals/grounded_eval.csv` - 5 detailed contextually-grounded answer examples
+- `tests/evals/run_ragas_eval.py` - Main RAGAS evaluation script
+- `tests/evals/README.md` - Comprehensive usage documentation
+- `tests/evals/baseline_ragas_results.csv` - Generated baseline evaluation results
+- `tests/evals/grounded_ragas_results.csv` - Generated grounded evaluation results
+- `tests/evals/phase2_ragas_comparison.csv` - Comparison metrics with deltas
 
-### Admin & RAG Features  
-- ✅ **PDF Upload System**: Uploads forwarded to FastAPI; text extracted, chunked, embedded
-- ✅ **Vector Store (In-Memory + JSON Index)**: Cosine similarity over embeddings; index saved to `/tmp/rag_index.json`
-- ✅ **RAG Status**: `/api/rag-status` (FastAPI + Next.js forwarder)
-- ✅ **Health Monitoring**: `/api/health`
-- ✅ **Landing Page**: Admin tools, system health, Kids Tutor navigation
+### Files Modified
+- `pyproject.toml` - Added `ragas==0.2.10` and `datasets>=2.0.0` dependencies
 
-### Technical Improvements
-- ✅ **File Organization**: Moved `lib/db.ts` to `frontend/lib/db.ts` for better Next.js integration
-- ✅ **Import Path Fixes**: Corrected all relative imports across API routes
-- ✅ **Error Handling**: Comprehensive logging and error recovery
-- ✅ **UI Fixes**: Quiz option text visibility, responsive design improvements
+### Metrics Evaluated
+- **Faithfulness** - Is the answer grounded in retrieved context?
+- **Context Recall** - Does context cover what's in ground truth?
+- **Context Precision** - Are retrieved chunks relevant to the question?
+- **Answer Relevancy** - Is answer semantically aligned with question?
 
-## Merge Instructions
+## How to Run
 
-### GitHub PR Route
-
-1. Commit your changes: `git commit -m "feat: Implement diagnostician agent"`
-2. Push your branch: `git push origin <your-branch-name>`
-3. Create a Pull Request on GitHub targeting the `main` branch.
-4. Request a review and merge once approved.
-
-### GitHub CLI Route
-
-1. Commit your changes: `git commit -m "feat: Implement diagnostician agent"`
-2. Push your branch: `git push origin <your-branch-name>`
-3. Create a Pull Request using the GitHub CLI: `gh pr create --base main --head <your-branch-name> --title "feat: Implement diagnostician agent" --body "This PR implements the diagnostician agent as per the task requirements."`
-4. Merge the PR: `gh pr merge <PR-number> --merge`
-
-## Post-Merge Verification
-
-After merging, verify the deployment works correctly:
-
-1. **Check Vercel Deployment**: Ensure the app redeploys automatically
-2. **Test Core Functionality**:
-   ```bash
-   curl -s https://your-app.vercel.app/api/health
-   curl -s https://your-app.vercel.app/api/kids/login -d '{"name":"Test","pin":"1234"}'
-   ```
-3. **Test Kids Tutor Flow**: 
-   - Visit `/login` and create a test kid
-   - Start a reading session at `/read/[kidId]`
-   - Complete quiz and check progress at `/report/[kidId]`
-4. **Test Admin Features**:
-   - Upload a PDF via the landing page
-   - Use "Rebuild Vector DB" button
-   - Check system health endpoint
-
-## Rollback Plan (If Issues Occur)
-
-If problems arise after merging:
+After merging, you can run the RAGAS evaluation with:
 
 ```bash
-# Find the merge commit hash
-git log --oneline -10
+uv sync
+uv run python tests/evals/run_ragas_eval.py
+```
 
-# Revert the merge commit
-git revert -m 1 <merge-commit-hash>
+Expected runtime: 2-5 minutes
 
-# Push the revert
+## Merge Options
+
+### Option 1: GitHub Pull Request (Recommended)
+
+1. **Push the feature branch:**
+   ```bash
+   git push origin feature/certification-challenge
+   ```
+
+2. **Create PR via GitHub UI:**
+   - Go to: https://github.com/YOUR_USERNAME/The-AI-Engineer-Challenge
+   - Click "Compare & pull request"
+   - Title: "Add RAGAS Evaluation Framework for Diagnostician Agent"
+   - Description: Reference this MERGE.md file
+   - Click "Create pull request"
+
+3. **Review and merge:**
+   - Review the changes in GitHub UI
+   - Check that CI passes (if configured)
+   - Click "Merge pull request"
+   - Select merge strategy (recommend "Squash and merge" for clean history)
+   - Confirm merge
+
+### Option 2: GitHub CLI (Fast)
+
+1. **Push the feature branch:**
+   ```bash
+   git push origin feature/certification-challenge
+   ```
+
+2. **Create and merge PR:**
+   ```bash
+   # Create PR
+   gh pr create \
+     --title "Add RAGAS Evaluation Framework for Diagnostician Agent" \
+     --body "$(cat MERGE.md)" \
+     --base main \
+     --head feature/certification-challenge
+   
+   # Review PR (optional)
+   gh pr view
+   
+   # Merge PR (after review)
+   gh pr merge --squash --delete-branch
+   ```
+
+### Option 3: Local Merge (Quick)
+
+⚠️ **Warning:** Only use if you're the sole contributor and don't need code review.
+
+```bash
+# Switch to main branch
+git checkout main
+
+# Merge feature branch
+git merge feature/certification-challenge --no-ff
+
+# Delete feature branch (optional)
+git branch -d feature/certification-challenge
+
+# Push to origin
 git push origin main
 ```
 
-## Notes
-- **Storage**: RAG state saved to `/tmp/rag_index.json` (ephemeral in serverless; persists during process lifecycle). No SQLite.
-- **Auto-Initialization**: Upload PDFs manually or via UI; RAG state persists via JSON save/load
-- **Environment Variables**: `OPENAI_API_KEY` required for embeddings and chat
-- **PDF Parsing**: Uses `PyMuPDFLoader`; chunking via `CharacterTextSplitter`
+## Testing After Merge
 
----
-**Created**: September 23, 2025  
-**Author**: AI Assistant  
-**Branch**: feature/activity-2-kids-tutor-quiz → main
+Verify the integration works:
+
+```bash
+# 1. Sync dependencies
+uv sync
+
+# 2. Run RAGAS evaluation
+uv run python tests/evals/run_ragas_eval.py
+
+# 3. Verify output files created
+ls -lh tests/evals/*.csv
+
+# 4. Run existing tests to ensure no regression
+uv run pytest tests/test_retrieval_similarity.py
+uv run pytest tests/test_diagnostician_agent_evaluation.py
+```
+
+## Integration with Phase 2
+
+The `phase2_ragas_comparison.csv` file contains key metrics for Phase 2 reporting:
+
+```csv
+Metric,Baseline,Grounded,Δ (Improvement)
+faithfulness,0.867,0.876,+0.010
+context_recall,0.933,0.633,-0.300
+context_precision,1.000,1.000,+0.000
+answer_relevancy,0.751,0.729,-0.022
+```
+
+These metrics demonstrate:
+- Quantitative evaluation of RAG pipeline quality
+- Comparison between baseline and grounded answers
+- Session 8 methodology applied to Diagnostician Agent
+
+## Dependencies Added
+
+- **ragas==0.2.10** - Evaluation framework from Session 8
+- **datasets>=2.0.0** - Required by RAGAS for dataset handling
+- **pandas** (already present) - For CSV handling
+- **numpy** (already present) - For computing metric averages
+
+## Notes
+
+- This is eval-only scope - no changes to agent code
+- Builds on existing `test_retrieval_similarity.py` and `test_diagnostician_agent_evaluation.py`
+- Aligns with methodology from `AGENT_SIMILARITY_SCORING.md`
+- Ready for Phase 2 Loom demo
+
+## Questions?
+
+See `tests/evals/README.md` for detailed usage instructions and metric interpretations.
