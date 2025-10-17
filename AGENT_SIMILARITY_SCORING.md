@@ -68,3 +68,30 @@ The similarity scoring works by:
 
 This ensures the evaluation is grounded in semantic similarity between the student's answer and the knowledge base.
 
+## Session Summary (Chat History)
+
+- Initialized persistent Qdrant at `QDRANT_URL=./qdrant_local`; loaded 11 Grade 3 PDFs (incl. Bees_and_Pollination.pdf).
+- Started backend FastAPI (`uv run python api/app.py`), resolved port 8000 conflicts by killing prior processes.
+- Verified `/api/search` and `/api/evaluate` endpoints; ensured `.env` keys loaded.
+- Ran tests multiple times:
+  - `tests/test_diagnostician_agent.py`
+  - `tests/test_diagnostician_agent_evaluation.py`
+  - `tests/test_retrieval_similarity.py`
+- Debugged mismatch where frontend scored baseline ~0.9; root cause: agent used LLM-only judgment.
+- Implemented Agentic RAG with objective similarity scoring (embeddings cosine similarity) to align with retrieval test.
+- Restarted backend; killed and restarted frontend on request; re-ran tests until all green (3/3).
+- Confirmed end-to-end: retriever → embeddings → Qdrant search → similarity scoring → LLM feedback.
+
+### We must use RAG
+- Retrieval from Qdrant is mandatory before evaluation.
+- Similarity score is computed between the student's answer and retrieved context.
+- LLM is used only for qualitative feedback (grounded, not replacing the numeric score).
+
+### Results Comparison
+
+| Method | Baseline Score | Grounded Score |
+|---|---:|---:|
+| Retrieval Test | 0.572 | 0.914 |
+| Updated Agent | 0.530 | 0.864 |
+| Difference | -0.042 | -0.050 |
+
