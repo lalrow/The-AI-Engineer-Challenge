@@ -1,58 +1,104 @@
-from langchain_openai import ChatOpenAI
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langgraph.graph import StateGraph, END
+from langgraph.checkpoint.memory import MemorySaver
 import os
+import json
+import numpy as np
+from backend.search_client import search_top_k
+
+def retrieve_context(state):
+    """Retrieve top-k relevant text from Qdrant (R step of RAG)."""
+    if state.get("context"): # Only retrieve if context is empty
+        return state
+    try:
+        docs = search_top_k(state["question"], k=4, api_key=state.get("api_key"))
+        state["context"] = "\n\n".join([d.page_content for d in docs])
+    except Exception as e:
+        state["context"] = f"Error retrieving context: {e}"
+    return state
 
 
 def diagnose_node(state):
-    """Agent node to evaluate student's answer and plan next diagnostic step."""
+    """Evaluate answer using semantic similarity (same as retrieval test)."""
     question = state.get("question", "")
     answer = state.get("answer", "")
     context = state.get("context", "")
     api_key = state.get("api_key")
+
+    # Compute similarity score using embeddings (same as test_retrieval_similarity.py)
+    embeddings = OpenAIEmbeddings(
+        model="text-embedding-3-small",
+        openai_api_key=api_key or os.getenv("OPENAI_API_KEY")
+    )
     
-    # Use provided API key or fall back to environment variable
+    # Get embeddings for answer and context
+    answer_embedding = embeddings.embed_query(answer)
+    context_embedding = embeddings.embed_query(context)
+    
+    # Compute cosine similarity
+    def cosine_similarity(a, b):
+        return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
+    
+    similarity_score = cosine_similarity(answer_embedding, context_embedding)
+    
+    # Use LLM for qualitative feedback based on similarity score
     llm = ChatOpenAI(
-        model="gpt-4o-mini", 
+        model="gpt-4o-mini",
         temperature=0.2,
-        api_key=api_key if api_key else os.getenv("OPENAI_API_KEY")
+        api_key=api_key or os.getenv("OPENAI_API_KEY"),
     )
 
-    prompt = f"""You are a science diagnostician agent. Evaluate the student's answer and return ONLY valid JSON (no markdown).
+    prompt = f"""You are a science diagnostician agent. The student's answer has been evaluated with a similarity score of {similarity_score:.3f} against the reference context.
 
 Student Question: {question}
 Student Answer: {answer}
-Context: {context}
+Reference Context: {context}
+Similarity Score: {similarity_score:.3f}
 
-Return this exact JSON structure:
+Based on this score:
+- 0.8-1.0: Excellent, comprehensive answer aligned with context
+- 0.6-0.8: Good answer with some alignment to context
+- 0.4-0.6: Acceptable but basic answer, missing key details from context
+- Below 0.4: Answer needs significant improvement
+
+Provide qualitative feedback in this JSON structure (no markdown):
 {{
-  "score": <float between 0.0 and 1.0>,
-  "evaluation": "<brief assessment>",
+  "evaluation": "<brief assessment explaining why the score is {similarity_score:.3f}>",
   "next_step": "<suggested follow-up question or activity>",
-  "feedback": "<constructive feedback for the student>"
+  "feedback": "<constructive feedback for improving the answer>"
 }}"""
 
-    result = llm.invoke(prompt)
-    state["agent_response"] = result.content
+    result = llm.invoke(prompt).content
+
+    try:
+        parsed = json.loads(result)
+    except Exception:
+        # Attempt to clean and parse if it's wrapped in markdown
+        try:
+            cleaned_result = result.replace("```json\n", "").replace("\n```", "")
+            parsed = json.loads(cleaned_result)
+        except Exception:
+            parsed = {
+                "evaluation": "Could not parse LLM response.",
+                "next_step": "Retry with clearer instructions.",
+                "feedback": "Agent output could not be parsed.",
+            }
+    
+    # Add the similarity score to the response
+    parsed["score"] = float(similarity_score)
+    
+    state["agent_response"] = parsed
     return state
 
 
-def build_graph():
-    """Build graph with environment-based API key (backward compatibility)"""
-    graph = StateGraph(dict)
-    graph.add_node("diagnose", diagnose_node)
-    graph.set_entry_point("diagnose")
-    graph.add_edge("diagnose", END)
-    return graph.compile()
-
-
 def build_graph_with_api_key(api_key: str):
-    """Build graph with explicit API key"""
     graph = StateGraph(dict)
+    graph.add_node("retrieve_context", retrieve_context)
     graph.add_node("diagnose", diagnose_node)
-    graph.set_entry_point("diagnose")
+    graph.set_entry_point("retrieve_context")
+    graph.add_edge("retrieve_context", "diagnose")
     graph.add_edge("diagnose", END)
-    return graph.compile()
+    return graph.compile(checkpointer=MemorySaver())
 
-
-# Keep for backward compatibility
-agent_graph = build_graph()
+# Remove for backward compatibility - no longer needed with explicit API key in FastAPI
+# agent_graph = build_graph()
