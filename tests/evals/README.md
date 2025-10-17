@@ -371,6 +371,53 @@ This is a pure **evaluation layer** addition—no production code touched!
 
 ---
 
+## 🔧 Troubleshooting
+
+### Test Failures: `test_retrieval_similarity.py`
+
+**Issue**: Test fails with `"Collection science_curriculum_g3_g6 not found"`
+
+**Attempted Solutions**:
+1. ✅ Verified `OPENAI_API_KEY` exists in `.env` file
+2. ✅ Loaded PDFs into Qdrant using `load_pdf_to_qdrant.py`:
+   ```bash
+   export $(grep -v '^#' .env | xargs)
+   uv run python projects/diagnostician-agent/retriever/load_pdf_to_qdrant.py \
+     --pdf public/pdfs/grade3/1758568139925_Bees_and_Pollination.pdf
+   ```
+   - Successfully ingested 32 chunks from 4 PDFs (Bees, Animal Habitats, Solar Eclipse, Water Cycle)
+3. ❌ Restarted backend server - collection still not found
+4. ❌ Re-ran tests - still failing
+
+**Root Cause**: The `load_pdf_to_qdrant.py` script and `api/app.py` backend are using **different Qdrant instances**:
+- Script uses: `QDRANT_URL` from `.env` or defaults to `:memory:`
+- Backend uses: Different Qdrant connection (likely in-memory or different path)
+
+**Solution**: Ensure both use the same Qdrant instance by:
+1. Setting `QDRANT_URL` consistently in `.env`
+2. Using persistent Qdrant storage (e.g., `./qdrant_local` path)
+3. Verifying backend loads from the same location as the PDF loader
+
+**Alternative**: Use the backend's own PDF upload endpoint (`/api/upload-pdf`) instead of the standalone script to ensure data goes to the correct Qdrant instance.
+
+### Environment Variables Not Loading
+
+**Issue**: Scripts fail with "Missing OPENAI_API_KEY in environment"
+
+**Solution**:
+```bash
+# Load all env vars from .env
+export $(grep -v '^#' .env | xargs)
+
+# Or source the file directly
+set -a && source .env && set +a
+
+# Verify it's set
+echo ${OPENAI_API_KEY:0:20}...
+```
+
+---
+
 ## 🤔 Questions?
 
 - **For overall evaluation strategy**: Check `AGENT_SIMILARITY_SCORING.md`
