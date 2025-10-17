@@ -15,8 +15,8 @@ Quantify the quality of the agent's retrieval + response pipeline using four key
 
 | File | Description |
 |------|-------------|
-| `baseline_eval.csv` | 5 question/answer pairs with **minimal** student answers (low quality) |
-| `grounded_eval.csv` | Same questions with **detailed** contextually-grounded answers (high quality) |
+| `baseline_eval.csv` | 10 question/answer pairs with **minimal** answers (1-2 sentences, surface-level) |
+| `grounded_eval.csv` | Same 10 questions with **grounded** answers (2-3 sentences, context-integrated) |
 | `run_ragas_eval.py` | Main evaluation script that runs RAGAS metrics on both datasets |
 | `README.md` | This file |
 
@@ -81,18 +81,47 @@ Expected runtime: **2-5 minutes** (depending on OpenAI API response time)
 - **High score (0.8-1.0):** Answer directly addresses the question
 - **Low score (<0.5):** Answer is off-topic or tangential
 
-## 🎯 Expected Results
+## 📊 Golden Dataset Methodology
 
-Based on the evaluation design:
+This evaluation uses a **manually-curated golden dataset** with 10 question/answer pairs extracted directly from the "Bees and Pollination" text corpus. 
 
-| Metric | Baseline Score | Grounded Score | Expected Δ |
-|--------|---------------|----------------|------------|
-| Faithfulness | ~0.45-0.55 | ~0.80-0.95 | +0.30-0.40 |
-| Context Recall | ~0.50-0.60 | ~0.85-0.95 | +0.30-0.40 |
-| Context Precision | ~0.70-0.80 | ~0.85-0.95 | +0.10-0.20 |
-| Answer Relevance | ~0.60-0.70 | ~0.90-1.00 | +0.25-0.35 |
+### Dataset Construction
 
-**Key Insight:** Grounded answers should score **0.3-0.4 points higher** on average, demonstrating the value of RAG-enhanced responses.
+1. **Questions**: 10 diverse questions covering multiple cognitive levels:
+   - Factual recall: "What is pollination?", "What is nectar used for?"
+   - Process explanations: "How does pollen stick to a bee?", "How do bees make honey?"
+   - Cause-effect: "Why is pollination important for humans?", "What would happen without pollinators?"
+   - Behavioral communication: "What is the waggle dance?"
+   - Threats & solutions: "What dangers do bees face?", "How can people help bees?"
+
+2. **Contexts**: 
+   - Manually extracted passages from the source PDF
+   - **Identical** for both baseline and grounded datasets
+   - 1-2 passages per question, each < 400 words
+   - Formatted as JSON list of strings
+
+3. **Answers**:
+   - **Baseline**: 1-2 sentence minimal answers (concise, surface-level)
+   - **Grounded**: 2-3 sentence answers with context integration (detailed, nuanced)
+   - Both generated using controlled prompts to ensure consistency
+
+### Results (10-Question Golden Dataset)
+
+| Metric | Baseline | Grounded | Δ | Status |
+|--------|----------|----------|---|--------|
+| **Faithfulness** | 0.950 | 0.929 | -0.021 | ⚠️ |
+| **Context Recall** | 0.850 | 0.883 | +0.033 | ✅ |
+| **Context Precision** | 1.000 | 1.000 | ±0.000 | ➖ |
+| **Answer Relevancy** | 0.787 | 0.887 | +0.099 | ✅ |
+
+**Average Improvement**: +0.028 across all metrics
+
+### Key Insights
+
+- **Answer Relevancy** shows the strongest improvement (+0.099), demonstrating that grounded answers are more semantically aligned with questions
+- **Context Recall** improved (+0.033), indicating grounded answers better cover ground truth information
+- **Context Precision** is perfect (1.0) for both, confirming retrieved contexts are highly relevant
+- **Faithfulness** shows slight decrease (-0.021), likely due to grounded answers being more detailed—RAGAS may flag additional context as potential unsupported claims even when accurate
 
 ## 🔗 Integration with Existing Tests
 

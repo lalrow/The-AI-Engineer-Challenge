@@ -5,9 +5,11 @@
 - Added datasets, evaluation script, docs, and deps to support standalone runs.
 
 ### What Was Added
-- `tests/evals/baseline_eval.csv` and `tests/evals/grounded_eval.csv`
-- `tests/evals/run_ragas_eval.py` (RAGAS evaluation script)
-- `tests/evals/README.md` (how-to + metric explanations)
+- `tests/evals/baseline_eval.csv` (10 Q/A pairs with minimal answers)
+- `tests/evals/grounded_eval.csv` (10 Q/A pairs with grounded answers)
+- `tests/evals/run_ragas_eval.py` (RAGAS evaluation script with validation)
+- `tests/evals/README.md` (methodology, how-to, metric explanations)
+- `tests/evals/RAGAS_EVAL_SUMMARY.md` (this file)
 - Outputs: `baseline_ragas_results.csv`, `grounded_ragas_results.csv`, `phase2_ragas_comparison.csv`
 - `pyproject.toml` deps: `ragas==0.2.10`, `datasets>=2.0.0`
 
@@ -29,18 +31,24 @@ uv run python tests/evals/run_ragas_eval.py
 - `reference` (ground truth)
 - `retrieved_contexts` (list[str] of retrieved chunks)
 
-### Results Snapshot
+### Results Snapshot (10-Question Golden Dataset)
 
-| Metric | Baseline | Grounded | Δ (Improvement) |
-| --- | ---:| ---:| ---:|
-| faithfulness | 0.867 | 0.876 | +0.010 |
-| context_recall | 0.933 | 0.633 | -0.300 |
-| context_precision | 1.000 | 1.000 | +0.000 |
-| answer_relevancy | 0.751 | 0.729 | -0.022 |
+| Metric | Baseline | Grounded | Δ (Improvement) | Status |
+| --- | ---:| ---:| ---:| :---: |
+| faithfulness | 0.950 | 0.929 | -0.021 | ⚠️ |
+| context_recall | 0.850 | 0.883 | +0.033 | ✅ |
+| context_precision | 1.000 | 1.000 | ±0.000 | ➖ |
+| answer_relevancy | 0.787 | 0.887 | +0.099 | ✅ |
+
+**Average Improvement**: +0.028 across all metrics
 
 Notes:
-- Numbers reflect current 5-example datasets; values will vary with dataset size/content.
-- RAGAS returns per-example lists; `run_ragas_eval.py` computes metric means and deltas.
+- Dataset contains 10 manually-curated Q/A pairs from "Bees and Pollination" corpus
+- Contexts are identical between baseline and grounded datasets
+- Baseline answers: 1-2 sentences (minimal)
+- Grounded answers: 2-3 sentences (context-integrated)
+- Answer relevancy shows strongest improvement (+0.099)
+- Context precision perfect (1.0) for both, indicating high-quality retrieval
 
 ### Key Script Excerpts
 Load data and parse retrieved contexts:
