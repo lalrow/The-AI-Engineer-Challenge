@@ -187,8 +187,11 @@ async def startup_event():
 
     try:
         from qdrant_client import QdrantClient
-        # Prefer path-based client for local persistence
-        client = QdrantClient(path=qdrant_url) if qdrant_url != ":memory:" else QdrantClient(location=":memory:")
+        # Always use path-based client for local persistence
+        if str(qdrant_url).startswith("http"):
+            client = QdrantClient(url=qdrant_url)
+        else:
+            client = QdrantClient(path=qdrant_url)
 
         try:
             info = client.get_collection(collection_name=collection_name)
@@ -510,12 +513,10 @@ async def search_qdrant(request: SearchRequest):
         from langchain_openai import OpenAIEmbeddings
         from qdrant_client import QdrantClient
         
-        # Initialize Qdrant client (supports url, in-memory, or path)
-        qdrant_url = os.getenv("QDRANT_URL", ":memory:")
+        # Initialize Qdrant client (supports url or path only)
+        qdrant_url = os.getenv("QDRANT_URL", "./qdrant_local")
         if str(qdrant_url).startswith("http"):
             client = QdrantClient(url=qdrant_url)
-        elif qdrant_url == ":memory:":
-            client = QdrantClient(location=":memory:")
         else:
             client = QdrantClient(path=qdrant_url)
         collection_name = os.getenv("COLLECTION_NAME", "science_curriculum_g3_g6")

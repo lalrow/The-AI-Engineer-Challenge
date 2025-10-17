@@ -11,7 +11,7 @@ Requirements:
 
 ENV:
   OPENAI_API_KEY=<your key>
-  QDRANT_URL=:memory: (default)
+  QDRANT_URL=/path/to/qdrant_local (REQUIRED, no default)
   COLLECTION_NAME=science_curriculum_g3_g6 (default)
 
 Usage:
@@ -79,17 +79,18 @@ def embed_texts_with_langchain(texts: List[str], api_key: str) -> List[List[floa
   return [embeddings.embed_query(text) for text in texts]
 
 
-def upsert_qdrant(collection: str, payloads: List[dict], vectors: List[List[float]], qdrant_url: str = ":memory:"):
+def upsert_qdrant(collection: str, payloads: List[dict], vectors: List[List[float]], qdrant_url: str):
   from qdrant_client import QdrantClient
   from qdrant_client.models import VectorParams, Distance, PointStruct
 
-  # Support URL, in-memory, or path-based Qdrant
+  # Support URL or path-based Qdrant only (no :memory:)
   if str(qdrant_url).startswith("http"):
     client = QdrantClient(url=qdrant_url)
-  elif qdrant_url == ":memory:":
-    client = QdrantClient(location=":memory:")
-  else:
+  elif os.path.isdir(qdrant_url) or "/" in qdrant_url or qdrant_url.endswith(".db"):
     client = QdrantClient(path=qdrant_url)
+  else:
+    print(f"❌ Invalid QDRANT_URL: {qdrant_url}. Must be a valid local path or http URL.", file=sys.stderr)
+    sys.exit(1)
 
   # Create collection if not exists
   try:
@@ -118,7 +119,11 @@ def main():
     print("Missing OPENAI_API_KEY in environment", file=sys.stderr)
     sys.exit(1)
 
-  qdrant_url = os.getenv("QDRANT_URL", ":memory:")
+  qdrant_url = os.getenv("QDRANT_URL")
+  if not qdrant_url:
+    print("❌ Missing QDRANT_URL in environment. Please set it in .env or export it.", file=sys.stderr)
+    sys.exit(1)
+  
   collection_name = os.getenv("COLLECTION_NAME", "science_curriculum_g3_g6")
 
   if not os.path.exists(args.pdf):
