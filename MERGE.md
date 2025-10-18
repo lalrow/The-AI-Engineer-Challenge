@@ -155,21 +155,3 @@ These metrics demonstrate:
 ## Questions?
 
 See `tests/evals/README.md` for detailed usage instructions and metric interpretations.
-
-
-## Database details 
-1. 📘 Source of Truth for Qdrant
-
-Cursor must always read the file MERGE.md (or QDRANT_CONFIG.md if renamed) before running or editing any scripts related to Qdrant.
-
-That file defines the single Qdrant instance location.
-
-Never create or use:
-
-:memory: databases
-
-Docker Qdrant instances
-
-Cloud-hosted Qdrant URLs
-
-✅ Only use local persistent Qdrant (e.g., http://localhost:6333 or local directory path).
