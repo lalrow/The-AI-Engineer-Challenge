@@ -7,6 +7,7 @@ This version mirrors Session 8 notebook logic.
 import os
 import pandas as pd
 import numpy as np
+import json # Added for JSON output
 from datasets import Dataset
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
@@ -132,13 +133,13 @@ print(comparison_df.to_string(index=False))
 print("\n💾 Saving results...")
 
 # Save detailed results
-baseline_results_path = os.path.join(script_dir, "baseline_ragas_results.csv")
-grounded_results_path = os.path.join(script_dir, "grounded_ragas_results.csv")
-comparison_path = os.path.join(script_dir, "phase2_ragas_comparison.csv")
+baseline_results_path = os.path.join(script_dir, "baseline_ragas_results.json")
+grounded_results_path = os.path.join(script_dir, "grounded_ragas_results.json")
+comparison_path = os.path.join(script_dir, "phase2_ragas_comparison.json")
 
-baseline_results.to_pandas().to_csv(baseline_results_path, index=False)
-grounded_results.to_pandas().to_csv(grounded_results_path, index=False)
-comparison_df.to_csv(comparison_path, index=False)
+baseline_results.to_pandas().to_json(baseline_results_path, orient="records", indent=2)
+grounded_results.to_pandas().to_json(grounded_results_path, orient="records", indent=2)
+comparison_df.to_json(comparison_path, orient="records", indent=2)
 
 print(f"✅ Baseline results saved to: {baseline_results_path}")
 print(f"✅ Grounded results saved to: {grounded_results_path}")
