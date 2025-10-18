@@ -28,13 +28,14 @@ curl -s http://localhost:3000/api/diagnostician \
 - Eval runner: `projects/diagnostician-agent/eval/run.ts`
 
 ## Retriever Scaffold (optional)
-Embeds PDF chunks and upserts into in-memory Qdrant.
+Embeds PDF chunks using SemanticChunker and upserts into persistent Qdrant (./qdrant_local).
 ```
 export OPENAI_API_KEY=your_key_here
 uv run python projects/diagnostician-agent/retriever/load_pdf_to_qdrant.py \
-  --pdf ./public/pdfs/grade3/bees.pdf \
-  --collection diagnostician-local
+  --pdf ./public/pdfs/grade3/bees.pdf
 ```
+
+Per MDC rules: Uses persistent Qdrant only (never :memory:, Docker, or cloud URLs).
 
 ## Eval Harness
 With frontend running on port 3000:

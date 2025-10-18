@@ -16,8 +16,6 @@ from fastapi.responses import StreamingResponse
 import io
 import numpy as np
 from typing import List, Dict, Any
-# Import PyMuPDFLoader for better PDF processing
-from langchain_community.document_loaders import PyMuPDFLoader
 from langchain_text_splitters import CharacterTextSplitter
 # No need for dotenv - just use os.getenv directly
 
@@ -253,35 +251,6 @@ def save_conversations(conversations):
     except Exception:
         pass
 
-def extract_text_from_pdf(pdf_file: UploadFile) -> str:
-    """Extract text content from uploaded PDF file using PyMuPDFLoader"""
-    try:
-        # Read the PDF file content
-        pdf_content = pdf_file.file.read()
-        pdf_file.file.seek(0)  # Reset file pointer
-        
-        # Save PDF content to a temporary file for PyMuPDFLoader
-        import tempfile
-        with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as temp_file:
-            temp_file.write(pdf_content)
-            temp_file_path = temp_file.name
-        
-        try:
-            # Use PyMuPDFLoader to extract text
-            loader = PyMuPDFLoader(temp_file_path)
-            documents = loader.load()
-            
-            # Combine all document text
-            text = "\n\n".join([doc.page_content for doc in documents])
-            
-            return text.strip()
-        finally:
-            # Clean up temporary file
-            os.unlink(temp_file_path)
-            
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Error extracting text from PDF: {str(e)}")
-
 async def initialize_rag_system(api_key: str = None):
     """Initialize the RAG system with OpenAI API key and auto-load PDFs"""
     global rag_system
@@ -452,55 +421,6 @@ async def get_conversations(user_id: str):
         "conversations": conversations[user_id],
         "total_messages": len(conversations[user_id])
     }
-
-# PDF Upload endpoint
-@app.post("/api/upload-pdf")
-async def upload_pdf(
-    file: UploadFile = File(...),
-    api_key: str = Form(...),
-    user_id: str = Form(...)
-):
-    """Upload and index a PDF file for RAG"""
-    try:
-        # Validate file type
-        if not file.filename.lower().endswith('.pdf'):
-            raise HTTPException(status_code=400, detail="Only PDF files are allowed")
-        
-        # Extract text from PDF
-        pdf_text = extract_text_from_pdf(file)
-        
-        if not pdf_text.strip():
-            raise HTTPException(status_code=400, detail="No text content found in PDF")
-        
-        # Initialize RAG system
-        rag = await initialize_rag_system(api_key)
-        
-        # Index the PDF content
-        rag.add_document(pdf_text)
-        
-        # Save the updated RAG state
-        rag.save_state()
-        
-        # Save the index (this is for metadata, not RAG state)
-        index_data = load_rag_index()
-        index_data[user_id] = {
-            "filename": file.filename,
-            "upload_time": str(time.time()),
-            "text_length": len(pdf_text)
-        }
-        save_rag_index(index_data)
-        
-        return {
-            "message": "PDF uploaded and indexed successfully",
-            "filename": file.filename,
-            "text": pdf_text,
-            "text_length": len(pdf_text),
-            "chunks": len(rag.documents),
-            "user_id": user_id
-        }
-        
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
 
 # Search endpoint for diagnostician (AIE8 Sessions 6-10 compliant)
 @app.post("/api/search")

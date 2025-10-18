@@ -5,18 +5,18 @@ from typing import List
 from langchain_core.documents import Document
 
 def search_top_k(query: str, k: int = 4, api_key: str = None) -> List[Document]:
-    """Search top-k chunks from Qdrant collection."""
-    qdrant_url = os.getenv("QDRANT_URL", ":memory:")
+    """Search top-k chunks from Qdrant collection using persistent storage."""
+    # Always use persistent Qdrant (never :memory:) per MDC rules
+    qdrant_url = os.getenv("QDRANT_URL", "./qdrant_local")
     collection_name = os.getenv("COLLECTION_NAME", "science_curriculum_g3_g6")
     effective_api_key = api_key or os.getenv("OPENAI_API_KEY", "")
 
     embeddings = OpenAIEmbeddings(model="text-embedding-3-small", openai_api_key=effective_api_key)
     vector = embeddings.embed_query(query)
 
+    # Support URL or path-based Qdrant only (no :memory: allowed)
     if str(qdrant_url).startswith("http"):
         client = QdrantClient(url=qdrant_url)
-    elif qdrant_url == ":memory:":
-        client = QdrantClient(location=":memory:")
     else:
         client = QdrantClient(path=qdrant_url)
 

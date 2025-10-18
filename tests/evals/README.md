@@ -389,16 +389,14 @@ This is a pure **evaluation layer** addition—no production code touched!
 3. ❌ Restarted backend server - collection still not found
 4. ❌ Re-ran tests - still failing
 
-**Root Cause**: The `load_pdf_to_qdrant.py` script and `api/app.py` backend are using **different Qdrant instances**:
-- Script uses: `QDRANT_URL` from `.env` or defaults to `:memory:`
-- Backend uses: Different Qdrant connection (likely in-memory or different path)
+**Solution**: Always use the official loader script:
+```bash
+uv run python projects/diagnostician-agent/retriever/load_pdf_to_qdrant.py --pdf <path>
+```
 
-**Solution**: Ensure both use the same Qdrant instance by:
-1. Setting `QDRANT_URL` consistently in `.env`
-2. Using persistent Qdrant storage (e.g., `./qdrant_local` path)
-3. Verifying backend loads from the same location as the PDF loader
+This ensures consistent semantic chunking and direct Qdrant ingestion per MDC rules.
 
-**Alternative**: Use the backend's own PDF upload endpoint (`/api/upload-pdf`) instead of the standalone script to ensure data goes to the correct Qdrant instance.
+**Per MDC**: `QDRANT_URL` from `.env` uses persistent storage (./qdrant_local) - never :memory:, Docker, or cloud URLs.
 
 ### Environment Variables Not Loading
 

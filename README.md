@@ -132,7 +132,6 @@ The application provides the following API endpoints:
 - `POST /api/kids/login` - Kids login authentication
 - `GET /api/kids/[kidId]` - Get kid details by ID
 - `GET /api/reports/[kidId]` - Get kid progress report
-- `POST /api/upload-pdf` - Upload PDF files
 - `POST /api/reindex` - Rebuild vector database
 - `POST /api/next-session` - Get next reading session
 - `POST /api/start-session` - Start reading session
@@ -141,6 +140,21 @@ The application provides the following API endpoints:
 Visit `/api/endpoints` to see a complete list with descriptions.
 
 </details>
+
+## 📊 Qdrant Data Loading Policy
+
+**Canonical Loader:** `projects/diagnostician-agent/retriever/load_pdf_to_qdrant.py`
+
+- **Single source of truth** for PDF ingestion into Qdrant
+- Uses **SemanticChunker** (percentile=95) for conceptual coherence
+- No duplicate loaders (removed from `/api/upload-pdf`)
+- Always run via: `uv run python projects/diagnostician-agent/retriever/load_pdf_to_qdrant.py --pdf <path>`
+- `QDRANT_URL` must be set explicitly in `.env`
+
+**Per MDC Rules:**
+- One local persistent Qdrant instance only
+- Never `:memory:`, Docker, or cloud URLs
+- All code reads `QDRANT_URL` from `.env`
 
 <details>
   <summary>🚀 Deploying Your First LLM-powered Application with Vercel</summary>

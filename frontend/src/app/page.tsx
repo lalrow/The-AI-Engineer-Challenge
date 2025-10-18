@@ -190,50 +190,6 @@ export default function Home() {
     }
   };
 
-  const uploadPDF = async () => {
-    if (!selectedFile) {
-      alert('Please select a PDF file');
-      return;
-    }
-
-    if (!apiKey.trim()) {
-      alert('Please enter your OpenAI API key');
-      return;
-    }
-
-    if (!userId.trim()) {
-      alert('User ID not ready yet. Please wait a moment and try again.');
-      return;
-    }
-
-    setUploadStatus('Uploading PDF...');
-
-    try {
-      const formData = new FormData();
-      formData.append('file', selectedFile);
-      formData.append('api_key', apiKey);
-      formData.append('user_id', userId);
-
-      const response = await fetch('/api/upload-pdf', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        setUploadStatus(`Error: HTTP ${response.status} - ${errorText}`);
-        return;
-      }
-
-      const result = await response.json();
-      setUploadStatus(`✅ ${result.message}`);
-      setChatMode('rag');
-      checkRAGStatus();
-    } catch (error) {
-      setUploadStatus(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
-  };
-
   const ragChat = async () => {
     if (!userMessage.trim()) {
       alert('Please enter a message');
@@ -681,19 +637,6 @@ export default function Home() {
                 <p className="text-blue-100 mb-2">Chat endpoint for AI conversations</p>
                 <p className="text-sm text-blue-200">
                   <strong>Body:</strong> JSON with developer_message, user_message, model, api_key
-                </p>
-              </div>
-
-              <div className="bg-black/20 p-4 rounded-lg">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="px-2 py-1 bg-purple-500 text-white text-xs font-bold rounded">
-                    POST
-                  </span>
-                  <code className="text-lg font-mono">/api/upload-pdf</code>
-                </div>
-                <p className="text-blue-100 mb-2">Upload and index PDF for RAG</p>
-                <p className="text-sm text-blue-200">
-                  <strong>Body:</strong> FormData with file, api_key, user_id
                 </p>
               </div>
 
