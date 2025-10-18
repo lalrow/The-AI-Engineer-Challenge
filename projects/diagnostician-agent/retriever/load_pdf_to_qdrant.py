@@ -1,8 +1,8 @@
 """
 Foundational Diagnostician - Retriever (AIE8 Sessions 6-10 Compliant)
 
-Loads a PDF, chunks text using RecursiveCharacterTextSplitter, embeds with
-langchain-openai, and upserts into Qdrant collection.
+Loads a PDF, chunks text using SemanticChunker for conceptual coherence,
+embeds with langchain-openai, and upserts into Qdrant collection.
 
 Requirements:
   qdrant-client>=1.7,<1.9
@@ -42,9 +42,9 @@ def _ensure_deps():
   except Exception:
     missing.append("langchain-openai")
   try:
-    from langchain_text_splitters import RecursiveCharacterTextSplitter  # type: ignore
+    from langchain_experimental.text_splitter import SemanticChunker  # type: ignore
   except Exception:
-    missing.append("langchain-text-splitters")
+    missing.append("langchain-experimental")
   if missing:
     print(
       "Missing dependencies: " + ", ".join(missing) + "\n"
@@ -64,9 +64,23 @@ def extract_text_from_pdf(pdf_path: str) -> str:
   return "\n".join(p.strip() for p in parts if p and p.strip())
 
 
-def chunk_text_with_langchain(text: str) -> List[str]:
-  from langchain_text_splitters import RecursiveCharacterTextSplitter
-  splitter = RecursiveCharacterTextSplitter(chunk_size=600, chunk_overlap=100)
+def chunk_text_with_langchain(text: str, api_key: str) -> List[str]:
+  """
+  Chunk text using SemanticChunker for conceptual coherence.
+  This preserves semantic meaning (e.g., 'nectar → honey' process stays together).
+  """
+  from langchain_experimental.text_splitter import SemanticChunker
+  from langchain_openai import OpenAIEmbeddings
+  
+  embeddings = OpenAIEmbeddings(
+    model="text-embedding-3-small",
+    openai_api_key=api_key
+  )
+  splitter = SemanticChunker(
+    embeddings,
+    breakpoint_threshold_type="percentile",
+    breakpoint_threshold_amount=95
+  )
   return splitter.split_text(text)
 
 
@@ -135,9 +149,9 @@ def main():
   text = extract_text_from_pdf(args.pdf)
   print(f"[retriever] Text length: {len(text)} chars")
 
-  print("[retriever] Chunking text with RecursiveCharacterTextSplitter...")
-  chunks = chunk_text_with_langchain(text)
-  print(f"[retriever] Created {len(chunks)} chunks")
+  print("[retriever] Chunking text with SemanticChunker (percentile=95)...")
+  chunks = chunk_text_with_langchain(text, api_key)
+  print(f"[retriever] Created {len(chunks)} semantic chunks")
 
   print("[retriever] Generating embeddings with langchain-openai...")
   vectors = embed_texts_with_langchain(chunks, api_key)

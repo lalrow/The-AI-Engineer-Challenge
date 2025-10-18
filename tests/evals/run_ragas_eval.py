@@ -8,6 +8,7 @@ import os
 import pandas as pd
 import numpy as np
 import json # Added for JSON output
+from datetime import datetime
 from datasets import Dataset
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
@@ -20,6 +21,10 @@ from ragas.embeddings import LangchainEmbeddingsWrapper
 # 0️⃣  Load Environment
 # ----------------------------
 load_dotenv()
+
+# Run label for experiment tracking (can be set via env: RUN_LABEL=semantic)
+RUN_LABEL = os.getenv("RUN_LABEL", "default")
+timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
 # ----------------------------
 # 1️⃣  Load Evaluation Data
@@ -132,18 +137,25 @@ print(comparison_df.to_string(index=False))
 # ----------------------------
 print("\n💾 Saving results...")
 
-# Save detailed results
-baseline_results_path = os.path.join(script_dir, "baseline_ragas_results.json")
-grounded_results_path = os.path.join(script_dir, "grounded_ragas_results.json")
-comparison_path = os.path.join(script_dir, "phase2_ragas_comparison.json")
+# Save detailed results with timestamp and run label
+baseline_results_path = os.path.join(script_dir, f"baseline_ragas_results_{RUN_LABEL}_{timestamp}.json")
+grounded_results_path = os.path.join(script_dir, f"grounded_ragas_results_{RUN_LABEL}_{timestamp}.json")
+comparison_path = os.path.join(script_dir, f"phase2_ragas_comparison_{RUN_LABEL}_{timestamp}.json")
 
+# Save as JSON
 baseline_results.to_pandas().to_json(baseline_results_path, orient="records", indent=2)
 grounded_results.to_pandas().to_json(grounded_results_path, orient="records", indent=2)
 comparison_df.to_json(comparison_path, orient="records", indent=2)
 
+# Also save as CSV for easy viewing
+baseline_results.to_pandas().to_csv(baseline_results_path.replace('.json', '.csv'), index=False)
+grounded_results.to_pandas().to_csv(grounded_results_path.replace('.json', '.csv'), index=False)
+comparison_df.to_csv(comparison_path.replace('.json', '.csv'), index=False)
+
 print(f"✅ Baseline results saved to: {baseline_results_path}")
 print(f"✅ Grounded results saved to: {grounded_results_path}")
 print(f"✅ Comparison saved to: {comparison_path}")
+print(f"   (CSV versions also saved)")
 
 # ----------------------------
 # 9️⃣  Summary
