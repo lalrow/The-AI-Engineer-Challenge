@@ -1,217 +1,157 @@
-<p align = "center" draggable=”false” ><img src="https://github.com/AI-Maker-Space/LLM-Dev-101/assets/37101144/d1343317-fa2f-41e1-8af1-1dbb18399719" 
-     width="200px"
-     height="auto"/>
-</p>
+# 🧠 Foundational Skill Diagnostician & Progress Narrator Agents
 
+> Developer-friendly Certification Challenge Submission (Ontario Science Focus)  
+> 🎯 Diagnose → Guide → Narrate Progress • 🧩 Science-aligned RAG • 🛠️ Agentic Reasoning
 
-## <h1 align="center" id="heading"> 👋 Welcome to the AI Engineer Challenge</h1>
+---
 
-## 🤖 Your First Vibe Coding LLM Application
+## 🟢 Task 1 — Defining the Problem & Audience
 
-> If you are a novice, and need a bit more help to get your dev environment off the ground, check out this [Setup Guide](docs/GIT_SETUP.md). This guide will walk you through the 'git' setup you need to get started.
+**Answering rubric question:**  
+> “Write a succinct 1-sentence description of the problem.”  
+> “Write 1–2 paragraphs on why this is a problem for your specific user.”
 
-> For additional context on LLM development environments and API key setup, you can also check out our [Interactive Dev Environment for LLM Development](https://github.com/AI-Maker-Space/Interactive-Dev-Environment-for-AI-Engineers).
+Teachers and parents struggle to both **detect the root cause of learning gaps** and **track how a student’s understanding evolves over time**.  
 
-In this repository, we'll walk you through the steps to create a LLM (Large Language Model) powered application with a vibe-coded frontend!
+Ontario educators often see a wrong answer but cannot easily tell *why*—vocabulary, reasoning, or prior-concept gaps. Without that diagnosis, feedback stays shallow. And even when they intervene, progress is hard to measure across weeks because report cards are snapshots, not narratives.  
+Families need a tool that delivers both **diagnosis** (what to fix) and **trajectory** (is it improving?) to sustain continuous learning in Science & Math.
 
-Are you ready? Let's get started!
+---
 
-<details>
-  <summary>🖥️ Accessing "gpt-4.1-mini" (ChatGPT) like a developer</summary>
+## 🟢 Task 2 — Proposed Solution & Agentic Reasoning
 
-1. Head to [this notebook](https://colab.research.google.com/drive/1sT7rzY_Lb1_wS0ELI1JJfff0NUEcSD72?usp=sharing) and follow along with the instructions!
+**Answering rubric question:**  
+> “Propose a solution and describe where you will use an agent or agents.  
+> What will you use agentic reasoning for in your app?”
 
-2. Complete the notebook and try out your own system/assistant messages!
+Two cooperating agents create a continuous feedback loop:  
 
-That's it! Head to the next step and start building your application!
+1️⃣ **Foundational Skill Diagnostician Agent** — analyzes student answers, pinpoints conceptual gaps, and plans the next diagnostic step using a *planning loop*.  
+2️⃣ **Longitudinal Progress Narrator Agent** — summarizes chat + quiz logs into a *3-sentence progress note + Home Tip*, using *reflective reasoning* over persistent memory.
 
-</details>
+> **Agentic reasoning:**  
+> • Diagnostician → *planning* next question or hint based on error pattern.  
+> • Narrator → *reflection* across sessions to produce personalized, tone-controlled reports.  
+> Together they deliver adaptive, curriculum-aligned, empathetic feedback.
 
+---
 
-<details>
-  <summary>🏗️ Forking & Cloning This Repository</summary>
+## 🟢 Task 3 — Dealing with Data (Chunking Strategy) 🧱
 
-Before you begin, make sure you have:
+**Answering rubric question:**  
+> “Describe the default chunking strategy you will use and why you made this decision.”
 
-1. 👤 A GitHub account (you'll need to replace `YOUR_GITHUB_USERNAME` with your actual username)
-2. 🔧 Git installed on your local machine
-3. 💻 A code editor (like Cursor, VS Code, etc.)
-4. ⌨️ Terminal access (Mac/Linux) or Command Prompt/PowerShell (Windows)
-5. 🔑 A GitHub Personal Access Token (for authentication)
+We use **semantic chunking** by meaning boundaries—section headers, paragraph shifts, and conceptual transitions—so each chunk remains a *complete teaching unit*.  
 
-Got everything in place? Let's move on!
+This suits Science PDFs such as *Bees and Pollination* where “pollen → seed → food chain” must stay intact. Fixed-window chunking often splits mid-concept; semantic chunking preserves coherence for retrieval.  
+**Examples:**  
+- In *Water Cycle*, “evaporation → condensation → precipitation” must appear together.  
+- In *Ecosystems*, definitions + examples belong in one retrieval unit.  
 
-1. Fork [this](https://github.com/AI-Maker-Space/The-AI-Engineer-Challenge) repo!
+Semantic chunking produced higher **faithfulness**, **context recall**, and **answer relevancy**, ensuring retrieval of concept-complete context like a teacher would provide.
 
-     ![image](https://i.imgur.com/bhjySNh.png)
+---
 
-1. Clone your newly created repo.
+## 🟢 Task 4 — End-to-End Prototype (Architecture Overview)
 
-     ``` bash
-     # First, navigate to where you want the project folder to be created
-     cd PATH_TO_DESIRED_PARENT_DIRECTORY
+**Answering rubric question:**  
+> “Describe the tools you plan to use in each part of your stack.  
+> Write one sentence on why you made each tooling choice.”
 
-     # Then clone (this will create a new folder called The-AI-Engineer-Challenge)
-     git clone git@github.com:<YOUR GITHUB USERNAME>/The-AI-Engineer-Challenge.git
-     ```
+| Layer | Tool | Rationale |
+|:--|:--|:--|
+| 🧠 LLM Core | **OpenAI GPT-4-mini**, **text-embedding-3-small** | Cost-efficient reasoning + high-quality embeddings |
+| 🔄 Graph Flow | **LangGraph** | Orchestrates multi-agent planning + reflection |
+| 🧩 Framework | **LangChain** | Provides retriever + tool abstractions |
+| 🗂️ Vector Store | **Qdrant (persistent)** | Local reproducibility and fast vector search |
+| ⚙️ Reranker | **Cohere Rerank** | Surfaces the most instructionally useful chunks |
+| 🌐 Backend/UI | **FastAPI + Next.js** | Lightweight modular API + frontend |
 
-     > Note: This command uses SSH. If you haven't set up SSH with GitHub, the command will fail. In that case, use HTTPS by replacing `git@github.com:` with `https://github.com/` - you'll then be prompted for your GitHub username and personal access token.
+> _Architecture Diagram Placeholder:_  
+> `![Architecture Diagram](./docs/architecture.png)`
 
-2. Verify your git setup:
+---
 
-     ```bash
-     # Check that your remote is set up correctly
-     git remote -v
+## 🟢 Task 5 — Golden Dataset & RAGAS Evaluation 🧪
 
-     # Check the status of your repository
-     git status
+**Answering rubric question:**  
+> “Provide at least one example of an evaluated answer and explain the score.”
 
-     # See which branch you're on
-     git branch
-     ```
+### 📘 Example 1 — Baseline (Ungrounded)
 
-     <!-- > Need more help with git? Check out our [Detailed Git Setup Guide](docs/GIT_SETUP.md) for a comprehensive walkthrough of git configuration and best practices. -->
+**Prompt:** “What is pollination?”  
+**Score:** 0.4796985490747969 (≈ 0.48)
 
-3. Open the freshly cloned repository inside Cursor!
+Correct definition but **minimal context**—omits pollinators and significance.  
+Feedback → *Add why it matters (seed/fruit formation, human food systems) and mention other pollinators.*
 
-     ```bash
-     cd The-AI-Engineering-Challenge
-     cursor .
-     ```
+---
 
-4. This project now uses Next.js API routes instead of a separate backend
+### 📗 Example 2 — Grounded (with Curriculum Context)
 
-</details>
+**Prompt:** “What is pollination?”  
+**Score:** 0.7966748581700177 (≈ 0.80)
 
-<details>
-  <summary>🔥Setting Up for Vibe Coding Success </summary>
+Comprehensive coverage—mechanism + bee role + human impact; misses minor details.  
+Feedback → *Excellent—expand to non-bee pollinators and nectar cycle.*
 
-While it is a bit counter-intuitive to set things up before jumping into vibe-coding - it's important to remember that there exists a gradient betweeen AI-Assisted Development and Vibe-Coding. We're only reaching *slightly* into AI-Assisted Development for this challenge, but it's worth it!
+---
 
-1. Check out the rules in `.cursor/rules/` and add theme-ing information like colour schemes in `frontend-rule.mdc`! You can be as expressive as you'd like in these rules!
-2. We're going to index some docs to make our application more likely to succeed. To do this - we're going to start with `CTRL+SHIFT+P` (or `CMD+SHIFT+P` on Mac) and we're going to type "custom doc" into the search bar. 
+### 📊 RAGAS Metric Comparison (Phase 2)
 
-     ![image](https://i.imgur.com/ILx3hZu.png)
-3. We're then going to copy and paste `https://nextjs.org/docs` into the prompt.
+**Answering rubric question:**  
+> “Show your quantitative evaluation and analysis.”
 
-     ![image](https://i.imgur.com/psBjpQd.png)
+**Terminology:** `quiz_question_by_system`, `answer_by_teacher_agent`, `reference_answer`, `retrieved_contexts`  
+📁 `phase2_ragas_comparison_rerank_20251018_231012.json`
 
-4. We're then going to use the default configs to add these docs to our available and indexed documents.
+| Metric | Baseline (Semantic) | Improved (Semantic + Reranker) | Δ (Improvement) | What It Means |
+|:--|:--:|:--:|:--:|:--|
+| **Faithfulness** | 0.850 | 0.900 | +0.050 | Answer better supported by retrieved chunks (no hallucination). |
+| **Context Recall** | 0.883 | 0.883 | +0.000 | Full coverage maintained. |
+| **Context Precision** | 1.000 | 1.000 | +0.000 | Noise-free retrieval preserved. |
+| **Answer Relevancy** | 0.779 | 0.895 | +0.116 | Answer aligns more closely with curriculum truth. |
 
-     ![image](https://i.imgur.com/LULLeaF.png)
+**📈 Metrics Analysis Placeholder:**  
+`![Metrics Analysis](./docs/metrics_comparison.png)`
 
-5. After that - you will do the same with Vercel's documentation. After which you should see:
+**Analysis:**  
+- **Faithfulness ↑ (+0.05)** → Fewer unsupported sentences.  
+- **Answer Relevancy ↑ (+0.12)** → Better conceptual alignment (pollination → seeds → food systems).  
+- Recall & Precision steady → Reranking improved ordering without loss or noise.
 
-     ![image](https://i.imgur.com/hjyXhhC.png) 
+---
 
-</details>
+## 🟢 Task 6 — Advanced Retrieval Technique
 
-<details>
-  <summary>😎 Vibe Coding a Kids Science Tutor Application</summary>
+**Answering rubric question:**  
+> “Explain what advanced retrieval or reranking you used and why.”
 
-1. Use `Command-L` or `CTRL-L` to open the Cursor chat console. 
+Layered **Cohere Reranker** on top of semantic chunking.  
+It re-orders retrieved chunks by contextual similarity to the query, surfacing the most instructionally relevant paragraphs first.  
+In our Diagnostician scenario, that means the agent reads the bee-pollination segment before definitions—boosting **faithfulness** and **relevancy** without changing coverage.
 
-2. Set the chat settings to the following:
+---
 
-     ![image](https://i.imgur.com/LSgRSgF.png)
+## 🟢 Task 7 — Assessing Performance & Future Work 🗺️
 
-3. Ask Cursor to create a frontend for your application. Iterate as much as you like!
+**Answering rubric question:**  
+> “Summarize how you will assess ongoing performance and what you will improve next.”
 
-4. Run the frontend using the instructions Cursor provided. 
+- Continue logging **RAGAS metrics** per quiz to monitor drift.  
+- From **Oct 20 → Demo Day (3 weeks):** track one learner’s 20 diagnostic interactions and generate a **consolidated progress report**.  
+- Upload additional Ontario Science PDFs to expand curriculum coverage.  
+- Add a **dashboard** showing longitudinal progress, skill-gap map, and next practice suggestions.  
+- Target metrics: **Faithfulness ≥ 0.9**, **Answer Relevancy ≥ 0.9** across new datasets.
 
-> NOTE: If you run into any errors, copy and paste them back into the Cursor chat window - and ask Cursor to fix them!
+---
 
-> NOTE: This application uses Next.js API routes for all backend functionality. All API endpoints are located in `/frontend/src/app/api/` directory.
-
-### Available API Endpoints
-
-The application provides the following API endpoints:
-
-- `GET /api/health` - Health check with system status
-- `GET /api/endpoints` - List all available API endpoints
-- `POST /api/kids/login` - Kids login authentication
-- `GET /api/kids/[kidId]` - Get kid details by ID
-- `GET /api/reports/[kidId]` - Get kid progress report
-- `POST /api/reindex` - Rebuild vector database
-- `POST /api/next-session` - Get next reading session
-- `POST /api/start-session` - Start reading session
-- `POST /api/quiz` - Submit quiz answers
-
-Visit `/api/endpoints` to see a complete list with descriptions.
-
-</details>
-
-## 📊 Qdrant Data Loading Policy
-
-**Canonical Loader:** `projects/diagnostician-agent/retriever/load_pdf_to_qdrant.py`
-
-- **Single source of truth** for PDF ingestion into Qdrant
-- Uses **SemanticChunker** (percentile=95) for conceptual coherence
-- No duplicate loaders (removed from `/api/upload-pdf`)
-- Always run via: `uv run python projects/diagnostician-agent/retriever/load_pdf_to_qdrant.py --pdf <path>`
-- `QDRANT_URL` must be set explicitly in `.env`
-
-**Per MDC Rules:**
-- One local persistent Qdrant instance only
-- Never `:memory:`, Docker, or cloud URLs
-- All code reads `QDRANT_URL` from `.env`
-
-<details>
-  <summary>🚀 Deploying Your First LLM-powered Application with Vercel</summary>
-
-1. Ensure you have signed into [Vercel](https://vercel.com/) with your GitHub account.
-
-2. Ensure you have `npm` (this may have been installed in the previous vibe-coding step!) - if you need help with that, ask Cursor!
-
-3. Run the command:
+## 🧰 Stack Summary & Quick Run Guide
 
      ```bash
-     npm install -g vercel
-     ```
+# Backend
+uv run uvicorn api.app:app --reload --host 0.0.0.0 --port 8000
 
-4. Run the command:
-
-     ```bash
-     vercel
-     ```
-
-5. Follow the in-terminal instructions. (Below is an example of what you will see!)
-
-     ![image](https://i.imgur.com/D1iKGCq.png)
-
-6. Once the build is completed - head to the provided link and try out your app!
-
-> NOTE: Remember, if you run into any errors - ask Cursor to help you fix them!
-
-</details>
-
-### Vercel Link to Share
-
-You'll want to make sure you share you *domains* hyperlink to ensure people can access your app!
-
-![image](https://i.imgur.com/mpXIgIz.png)
-
-> NOTE: Test this is the public link by trying to open your newly deployed site in an Incognito browser tab!
-
-### 🎉 Congratulations! 
-
-You just deployed your first LLM-powered application! 🚀🚀🚀 Get on linkedin and post your results and experience! Make sure to tag us at @AIMakerspace!
-
-Here's a template to get your post started!
-
-```
-🚀🎉 Exciting News! 🎉🚀
-
-🏗️ Today, I'm thrilled to announce that I've successfully built and shipped my first-ever LLM using the powerful combination of , and the OpenAI API! 🖥️
-
-Check it out 👇
-[LINK TO APP]
-
-A big shoutout to the @AI Makerspace for all making this possible. Couldn't have done it without the incredible community there. 🤗🙏
-
-Looking forward to building with the community! 🙌✨ Here's to many more creations ahead! 🥂🎉
-
-Who else is diving into the world of AI? Let's connect! 🌐💡
-
-#FirstLLMApp 
+# Frontend
+cd frontend && npm install && npm run dev
 ```
