@@ -67,8 +67,56 @@ Semantic chunking produced higher **faithfulness**, **context recall**, and **an
 | ⚙️ Reranker | **Cohere Rerank** | Surfaces the most instructionally useful chunks |
 | 🌐 Backend/UI | **FastAPI + Next.js** | Lightweight modular API + frontend |
 
-> _Architecture Diagram Placeholder:_  
-> `![Architecture Diagram](./docs/architecture.png)`
+**Architecture Diagram:**
+![Architecture Diagram](./docs/architecture.png)
+
+```mermaid
+%% Quiz Flow Architecture Diagram (Mermaid)
+%% Covers: Reading session → Quiz → Completion, and Diagnostician path
+
+flowchart LR
+
+  %% Frontend (Next.js) user flows
+  subgraph FE[Frontend (Next.js)]
+    A[Read Page /read/[kidId]] -->|POST /api/next-session| B((Create Next Session))
+    B --> C[Reading Timer (5 min)]
+    C -->|Timer expired or Skip| D[Quiz UI (MCQ)]
+    D --> E{Answer Selected?}
+    E -->|Next| D
+    E -->|Finish| F[Compute Score %]
+    F -->|POST /api/sessions/complete\\n{ sessionId, score, readingTime, answers }| G((Complete Session))
+
+    %% Separate diagnostic quiz path
+    H[Quiz Page /quiz] -->|POST /api/diagnostician\\n{ question, answer, apiKey }| I((Diagnostician API))
+  end
+
+  %% Next.js API Routes
+  subgraph API[Next.js API Routes]
+    B --> J[/api/next-session\\nSelect topic → create session → load PDF content → generate questions → saveQuizQuestion/]
+    G --> K[/api/sessions/complete\\nsaveQuizScore, updateReadingTime, logConversation, markTopicCompleted (score ≥ 70)/]
+    I --> L[/api/diagnostician\\nCall backend /api/search and /api/evaluate/]
+  end
+
+  %% Backend (FastAPI)
+  subgraph BE[Backend (FastAPI)]
+    L --> M[/api/search\\nRetrieve context (Qdrant)/]
+    L --> N[/api/evaluate\\nDiagnostician Agent (LangGraph)/]
+    N --> O{agent_response JSON}
+  end
+
+  %% Data Stores
+  subgraph DATA[Data]
+    P[(Qdrant Vector DB)]
+    Q[(Session & Quiz Store\\nfrontend/lib/db)]
+  end
+
+  %% Data flow links
+  M --> P
+  J --> Q
+  G --> Q
+  O --> I
+  I --> H
+```
 
 ---
 
