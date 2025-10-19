@@ -1,0 +1,122 @@
+[
+  {
+    "user_input":"What is pollination?",
+    "retrieved_contexts":[
+      "After finishing with one flower, the bee zips to another. Some of the pollen from her body rubs off onto the second flower. This simple act is called pollination. Pollination allows plants to make seeds and fruits. Without it, many plants could not grow new life."
+    ],
+    "response":"Pollination is when pollen moves from one flower to another.",
+    "reference":"Pollination is the transfer of pollen between flowers that allows plants to make seeds and fruits. Bees carry pollen on their bodies as they move from flower to flower, enabling plant reproduction.",
+    "faithfulness":1.0,
+    "context_recall":1.0,
+    "context_precision":0.9999999999,
+    "answer_relevancy":0.9999994158
+  },
+  {
+    "user_input":"Why do bees visit flowers?",
+    "retrieved_contexts":[
+      "Flowers are not just pretty; they are like restaurants for bees. Each flower offers nectar, a sweet liquid, and pollen, tiny golden grains. Nectar gives bees energy, while pollen provides protein to feed baby bees back at the hive."
+    ],
+    "response":"Bees visit flowers to get nectar and pollen for food.",
+    "reference":"Bees visit flowers to collect nectar for energy and pollen for protein. Nectar is brought back to the hive and turned into honey, while pollen feeds baby bees in the colony.",
+    "faithfulness":1.0,
+    "context_recall":0.5,
+    "context_precision":0.9999999999,
+    "answer_relevancy":1.0
+  },
+  {
+    "user_input":"How does pollen stick to a bee?",
+    "retrieved_contexts":[
+      "When the bee lands on a bright yellow sunflower, she digs deep inside to sip the nectar. As she does, grains of pollen stick to her hairy body. Bees don't plan this; it just happens as they move around. The pollen clings like dust on a fuzzy sweater."
+    ],
+    "response":"Pollen sticks to the bee's hairy body.",
+    "reference":"Pollen grains stick to a bee's hairy body as the bee moves around inside flowers collecting nectar. The pollen clings like dust on a fuzzy sweater, and the bee carries it unintentionally from flower to flower.",
+    "faithfulness":1.0,
+    "context_recall":0.6666666667,
+    "context_precision":0.9999999999,
+    "answer_relevancy":0.7853609694
+  },
+  {
+    "user_input":"Why is pollination important for humans?",
+    "retrieved_contexts":[
+      "Pollination is not just good for plants and bees; it helps humans too. Apples, strawberries, cucumbers, almonds, and many other foods need pollinators. In fact, scientists say one out of every three bites of food we eat exists because of pollination."
+    ],
+    "response":"Pollination helps grow the food we eat.",
+    "reference":"Pollination is essential for human food production because many fruits and vegetables depend on pollinators. Scientists estimate that one out of every three bites of food we eat exists because of pollination, including apples, strawberries, cucumbers, and almonds.",
+    "faithfulness":0.5,
+    "context_recall":1.0,
+    "context_precision":0.9999999999,
+    "answer_relevancy":0.6990400079
+  },
+  {
+    "user_input":"What is the waggle dance?",
+    "retrieved_contexts":[
+      "When a bee finds a good patch of flowers, she returns to the hive and performs a waggle dance. This dance tells her sisters the direction and distance of the flowers. The waggle dance is like a GPS for bees. The angle of the dance shows the direction toward the Sun, and the length of the wiggle shows how far away the flowers are."
+    ],
+    "response":"The waggle dance tells other bees where to find flowers.",
+    "reference":"The waggle dance is a communication method bees use to share the location of good flower patches. The angle of the dance shows direction relative to the Sun, while the length of the wiggle indicates distance, acting like a GPS for other bees.",
+    "faithfulness":1.0,
+    "context_recall":1.0,
+    "context_precision":0.9999999999,
+    "answer_relevancy":0.7800052304
+  },
+  {
+    "user_input":"How do bees make honey?",
+    "retrieved_contexts":[
+      "Nectar is brought back and stored in the hive's hexagon-shaped wax cells. Over time, bees fan their wings to dry the nectar, turning it into honey. Honey is food for the colony, especially in winter when flowers are gone."
+    ],
+    "response":"Bees turn nectar into honey by drying it with their wings.",
+    "reference":"Bees make honey by collecting nectar from flowers and bringing it back to the hive. They store the nectar in hexagon-shaped wax cells and fan their wings to dry it out, gradually turning it into honey that feeds the colony during winter.",
+    "faithfulness":1.0,
+    "context_recall":1.0,
+    "context_precision":0.9999999999,
+    "answer_relevancy":0.9999997847
+  },
+  {
+    "user_input":"What dangers do bees face?",
+    "retrieved_contexts":[
+      "While bees work hard, they also face dangers. Pesticides, habitat loss, and disease threaten bee populations. Without safe places to live and enough flowers to visit, bees struggle."
+    ],
+    "response":"Bees face dangers from pesticides, habitat loss, and disease.",
+    "reference":"Bee populations are threatened by multiple dangers including pesticides used in agriculture, loss of natural habitats with flowers, and various diseases. These challenges make it difficult for bees to find safe places to live and enough food to survive.",
+    "faithfulness":1.0,
+    "context_recall":1.0,
+    "context_precision":0.9999999999,
+    "answer_relevancy":0.9910424852
+  },
+  {
+    "user_input":"How can people help bees?",
+    "retrieved_contexts":[
+      "People can help too. Planting bee-friendly flowers such as lavender, clover, and sunflowers provides food. Building bee hotels gives shelter to solitary bees. Even leaving a small patch of wild plants in a yard can make a difference."
+    ],
+    "response":"People can plant flowers and build bee hotels.",
+    "reference":"People can help bees by planting bee-friendly flowers like lavender, clover, and sunflowers to provide food. Building bee hotels gives shelter to solitary bees, and leaving patches of wild plants in yards creates natural habitats for bees to thrive.",
+    "faithfulness":1.0,
+    "context_recall":1.0,
+    "context_precision":0.9999999999,
+    "answer_relevancy":0.7671835763
+  },
+  {
+    "user_input":"What is nectar used for?",
+    "retrieved_contexts":[
+      "Each flower offers nectar, a sweet liquid, and pollen, tiny golden grains. Nectar gives bees energy, while pollen provides protein to feed baby bees back at the hive."
+    ],
+    "response":"Nectar gives bees energy.",
+    "reference":"Nectar is a sweet liquid that flowers produce to attract bees. Bees collect nectar and drink it for energy to power their flight and daily activities. Back at the hive, nectar is processed and stored as honey for the colony's food supply.",
+    "faithfulness":1.0,
+    "context_recall":0.6666666667,
+    "context_precision":0.9999999999,
+    "answer_relevancy":0.7684366359
+  },
+  {
+    "user_input":"What would happen without pollinators?",
+    "retrieved_contexts":[
+      "Without it, many plants could not grow new life. Without bees, grocery stores would look very empty, and meals would be less colorful and less tasty. Imagine eating a bowl of fruit salad. The apples, blueberries, and melons likely grew because a pollinator carried pollen between flowers."
+    ],
+    "response":"We would have less food.",
+    "reference":"Without pollinators like bees, many plants could not produce seeds and fruits. Grocery stores would have far fewer food options, and meals would be less diverse. Foods like apples, blueberries, melons, and many others depend on pollination to grow.",
+    "faithfulness":0.0,
+    "context_recall":1.0,
+    "context_precision":0.9999999999,
+    "answer_relevancy":0.0
+  }
+]
