@@ -2,17 +2,15 @@
 
 This document consolidates all markdown documentation files in the project, organized by modification date with a cutoff of October 11, 2025.
 
----
-
 ## SECTION 1: Files Updated or Created After October 11, 2025
 
-This section contains 9 documentation files modified after Oct 11, 2025, including the Phase 2 RAGAS evaluation completion summary, semantic chunking implementation details, agent similarity scoring documentation, and updated project READMEs. These documents reflect the latest state of the Diagnostician Agent, RAG pipeline evaluation, single Qdrant database enforcement, and current development workflows.
+This section contains 9 documentation files modified after Oct 11, 2025, including Phase 2 RAGAS completion, semantic chunking notes, agent similarity scoring, and updated READMEs.
+They represent the current, authoritative state for evaluation, Qdrant policy, and workflows.
+All use uv for Python tasks and enforce a single persistent Qdrant instance.
+Use these for the latest instructions, metrics, and merge guidance.
 
 
----
-
-### tests/evals/PHASE2_COMPLETION_SUMMARY.md
-
+tests/evals/PHASE2_COMPLETION_SUMMARY.md
 # Phase 2 Golden RAGAS Evaluation — Completion Summary
 
 ## ✅ Task Completed
@@ -246,10 +244,7 @@ This implementation follows **Session 8 RAGAS notebook patterns**:
 
 
 
----
-
-### tests/evals/README.md
-
+tests/evals/README.md
 # 🐝 RAGAS Evaluation for Diagnostician Agent (Phase 2)
 
 Welcome to the golden standard evaluation suite! This directory contains a **manually-curated RAGAS evaluation** that proves our Diagnostician Agent's RAG pipeline isn't just good—it's measurably better. Following Session 8 methodology, we've built a reproducible benchmark that quantifies answer quality across four dimensions.
@@ -684,11 +679,7 @@ echo ${OPENAI_API_KEY:0:20}...
 
 
 
-
----
-
-### projects/diagnostician-agent/README.md
-
+projects/diagnostician-agent/README.md
 # Foundational Skill Diagnostician Agent
 Part of AI Makerspace Certification Challenge
 
@@ -740,12 +731,8 @@ Ensure Vercel has `OPENAI_API_KEY` set. `/quiz` and `/api/diagnostician` work on
 
 
 
-
----
-
-### README.md
-
-<p align = "center" draggable="false" ><img src="https://github.com/AI-Maker-Space/LLM-Dev-101/assets/37101144/d1343317-fa2f-41e1-8af1-1dbb18399719" 
+README.md
+<p align = "center" draggable=”false” ><img src="https://github.com/AI-Maker-Space/LLM-Dev-101/assets/37101144/d1343317-fa2f-41e1-8af1-1dbb18399719" 
      width="200px"
      height="auto"/>
 </p>
@@ -949,14 +936,14 @@ Here's a template to get your post started!
 ```
 🚀🎉 Exciting News! 🎉🚀
 
-🏗️ Today, I'm thrilled to announce that I've successfully built and shipped my first-ever LLM using the powerful combination of , and the OpenAI API! 🖥️
+🏗️ Today, I'm thrilled to announce that I've successfully built and shipped my first-ever LLM using the powerful combination of , and the OpenAI API! 🖥️
 
 Check it out 👇
 [LINK TO APP]
 
 A big shoutout to the @AI Makerspace for all making this possible. Couldn't have done it without the incredible community there. 🤗🙏
 
-Looking forward to building with the community! 🙌✨ Here's to many more creations ahead! 🥂🎉
+Looking forward to building with the community! 🙌✨ Here's to many more creations ahead! 🥂🎉
 
 Who else is diving into the world of AI? Let's connect! 🌐💡
 
@@ -966,11 +953,7 @@ Who else is diving into the world of AI? Let's connect! 🌐💡
 
 
 
-
----
-
-### MERGE.md
-
+MERGE.md
 # Merge Instructions
 
 This document outlines how to merge the `feature/certification-challenge` branch, containing the Qdrant retrieval and RAGAS evaluation implementation, back into the `main` branch.
@@ -1026,11 +1009,7 @@ This document outlines how to merge the `feature/certification-challenge` branch
 
 
 
-
----
-
-### AGENT_SIMILARITY_SCORING.md
-
+AGENT_SIMILARITY_SCORING.md
 # Agent Similarity Scoring Implementation
 
 ## Problem
@@ -1132,10 +1111,7 @@ This ensures the evaluation is grounded in semantic similarity between the stude
 
 
 
----
-
-### Cursor_Tasks_management.md
-
+Cursor_Tasks_management.md
 # Cursor Tasks Management
 
 A concise guide to manage implementation tasks in this repo when using Cursor.
@@ -1193,11 +1169,7 @@ A concise guide to manage implementation tasks in this repo when using Cursor.
 
 
 
-
----
-
-### .pytest_cache/README.md
-
+.pytest_cache/README.md
 # pytest cache directory #
 
 This directory contains data from the pytest's cache plugin,
@@ -1210,11 +1182,7 @@ See [the docs](https://docs.pytest.org/en/stable/how-to/cache.html) for more inf
 
 
 
-
----
-
-### .cursor/plans/wire-retriever-to-diagnostician-74738cbf.plan.md
-
+.cursor/plans/wire-retriever-to-diagnostician-74738cbf.plan.md
 <!-- 74738cbf-a058-47c6-8b97-819bc3cc66b9 c974f046-6808-412e-b0ef-94d5043ad338 -->
 # Wire Retriever to Diagnostician API
 
@@ -1330,28 +1298,20 @@ Expected: `{"evaluation":{"score":0.9,"feedback":"..."},"sources":[...]}`
 
 
 
-
-
----
-
 ## SECTION 2: Files Updated or Created Before October 11, 2025
 
-This section contains 6 documentation files modified before Oct 11, 2025, including foundational project overview, smart routing configuration explanations, Git setup guides, and initial Next.js documentation. These files represent the early architecture decisions, deployment strategies, and developer onboarding materials for the AI Engineer Challenge project.
+This section contains 6 documentation files modified before Oct 11, 2025, covering project overview, routing, Next.js boilerplate, Git setup, and FAQs.
+They reflect initial architecture and onboarding materials before the Phase 2 evaluation work.
+Use for background context on deployment, smart routing, and project structure.
+Some details may be superseded by Section 1 documents.
 
 
----
-
-### .cursor/commands/refactor.md
+.cursor/commands/refactor.md
 
 
 
 
-
-
----
-
-### PROJECT_OVERVIEW.md
-
+PROJECT_OVERVIEW.md
 # 🎯 High-Level Project Overview
 
 ## What This Is
@@ -1531,10 +1491,7 @@ This is a **comprehensive example** of how to build, deploy, and maintain a real
 
 
 
----
-
-### SMART_ROUTING_EXPLANATION.md
-
+SMART_ROUTING_EXPLANATION.md
 # 🧠 Smart Routing Explained
 
 ## What is Smart Routing?
@@ -1734,10 +1691,7 @@ This smart routing system is what makes your app feel like a **single, cohesive 
 
 
 
----
-
-### frontend/README.md
-
+frontend/README.md
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
@@ -1778,11 +1732,7 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 
 
-
----
-
-### docs/GIT_SETUP.md
-
+docs/GIT_SETUP.md
 # 🔧 Git Setup Guide
 
 Ready to level up your Git game? This guide is your ticket to becoming a Git ninja! We'll walk you through everything from basic setup to advanced workflows, making sure you're ready to rock your development journey. Just replace the placeholders (like `<YOUR-USERNAME>`) with your actual info, and you're good to go! 🚀
@@ -1872,12 +1822,12 @@ As a new Git user, it's smart to verify instructions! Here's how:
 
 1. **Test in a Safe Environment**:
 	- Create a test repository to try commands
-	- Use `git status` frequently to understand what's happening
+	- Use `git status` frequently to understand what's happening
 	- If something goes wrong, you can always delete the test repo and start over
 2. **Verify Command Output**:
 	- Most Git commands will show you what they're doing
-	- Some Git commands have a dry-run option. You can try adding `--dry-run` to see what would happen
-	- Use `git status` to check the result
+	- Some Git commands have a dry-run option. You can try adding `--dry-run` to see what would happen
+	- Use `git status` to check the result
 3. **Common Verification Commands**:
   
 	```bash
@@ -1895,8 +1845,8 @@ As a new Git user, it's smart to verify instructions! Here's how:
 	```
 
 4. **When in Doubt**:
-	- Check the official Git documentation: [https://git-scm.com/doc](https://git-scm.com/doc)
-	- Use `git help <command>` for detailed help
+	- Check the official Git documentation: [https://git-scm.com/doc](https://git-scm.com/doc)
+	- Use `git help <command>` for detailed help
 
 > 💡 **Pro Tip**: Git is designed to be safe - it's hard to permanently lose work. If you're unsure about a command, you can usually undo it!
 
@@ -1951,7 +1901,7 @@ As a new Git user, it's smart to verify instructions! Here's how:
 - Click "Create fork"
 
 
-💡 **What is forking?** Forking creates your own copy of someone else's repository on GitHub. It's like photocopying a recipe so you can make your own changes without affecting the original. This allows you to freely experiment, contribute back via pull requests, or build your own version of a project — all while keeping the original intact.
+💡 **What is forking?** Forking creates your own copy of someone else’s repository on GitHub. It’s like photocopying a recipe so you can make your own changes without affecting the original. This allows you to freely experiment, contribute back via pull requests, or build your own version of a project — all while keeping the original intact.
 
 #### 📥 Clone Your Fork
 
@@ -1973,7 +1923,7 @@ git remote add upstream https://github.com/<ORIGINAL-REPO-OWNER>/<REPO-NAME>.git
 git remote -v
 ```
 
-💡 **Tip**: If you've already stored your PAT in the macOS Keychain (or equivalent), you won't be prompted again.
+💡 **Tip**: If you've already stored your PAT in the macOS Keychain (or equivalent), you won’t be prompted again.
 
 💡 **What is cloning?** Cloning creates a local copy of a GitHub repository on your computer. It downloads a working version of the project so you can explore, make changes, and push updates from your own machine. While _forking_ gives you your own copy in the cloud (on GitHub), _cloning_ brings that copy down to your local development environment.
 
@@ -2002,7 +1952,7 @@ You should see a list of Git refs. If you get an error:
 
 #### 📁 Setting Up .gitignore
 
-Check or update the `.gitignore` file to keep unnecessary files out of your repository. Things like dependencies, environment files, and system artifacts don't belong in version control.
+Check or update the `.gitignore` file to keep unnecessary files out of your repository. Things like dependencies, environment files, and system artifacts don’t belong in version control.
 If your project doesn't already have a `.gitignore` file,  you can create it manually:
 
 ```bash
@@ -2052,8 +2002,8 @@ git check-ignore -v <FILENAME>
 Here's a practical Git workflow that's great for solo projects and easy to build on as your skills grow and your team expands. It's beginner-friendly but solid enough for real-world projects.
 💡**Heads-up:**  
 This guide focuses on using Git from the command line, which gives you flexibility and full control, especially when working locally.  
-Many of the steps explained here can also be done using GitHub's web interface.
-GitHub's web interface can be especially helpful when you're working in a shared repository.
+Many of the steps explained here can also be done using GitHub’s web interface.
+GitHub’s web interface can be especially helpful when you're working in a shared repository.
 
 ### 🌿 Creating and Switching Branches
 Branches let you work on new features or fixes without touching the main project (creating a safe sandbox to play in). 
@@ -2070,11 +2020,11 @@ git branch -a
 
 ```
 💡 **What is branching?**  
-Branches let you create alternate versions of your codebase where you can make changes safely, without affecting the main project. They're useful for working on features, fixes, or experiments — and can be merged back in when ready.
+Branches let you create alternate versions of your codebase where you can make changes safely, without affecting the main project. They’re useful for working on features, fixes, or experiments — and can be merged back in when ready.
 
 ### ✏️ Committing Your Changes
 
-A commit saves a snapshot of your changes to the repository. It's like taking a picture of your progress — with a message explaining what you changed and why. Commits help track history, share your work, and roll back if needed.
+A commit saves a snapshot of your changes to the repository. It’s like taking a picture of your progress — with a message explaining what you changed and why. Commits help track history, share your work, and roll back if needed.
 ```bash
 # Check status (what's changed in your universe?)
 git status
@@ -2096,7 +2046,7 @@ git status
 # Push to your fork (send your changes to your github repo)
 git push origin <YOUR-BRANCH-NAME>
 ```
-💡 **Tip:** If you make a mistake — in your code or your commit message — just fix it and make another commit. There's no need to rewrite history.
+💡 **Tip:** If you make a mistake — in your code or your commit message — just fix it and make another commit. There’s no need to rewrite history.
 
 #### 📝 Writing Good Commit Messages
 
@@ -2129,32 +2079,32 @@ git commit -m "docs(readme): update installation instructions"
 
 ### 📡 Fetching and Pulling
 
-Before pushing your changes or syncing with others, it helps to understand the difference between two common Git commands: `fetch` and `pull`.
+Before pushing your changes or syncing with others, it helps to understand the difference between two common Git commands: `fetch` and `pull`.
 
-#### 🚚 `git fetch`
+#### 🚚 `git fetch`
 
-Downloads changes from a remote repository — but **doesn't apply them** to your current branch.  
-Use this when you want to **check for updates** without affecting your work.
+Downloads changes from a remote repository — but **doesn’t apply them** to your current branch.  
+Use this when you want to **check for updates** without affecting your work.
 ```bash
 git fetch origin
 git log origin/main # Optional: review new commits before merging
 ```
 
-#### 📥 `git pull`
+#### 📥 `git pull`
 
-Does the same fetch, **but also merges** the changes into your current branch right away.
+Does the same fetch, **but also merges** the changes into your current branch right away.
 ```bash
 git pull origin main
 ```
 
 #### 🧠 Tip:
 
-- Use `fetch` when you want to **stay in control** and see what's changed first.
+- Use `fetch` when you want to **stay in control** and see what’s changed first.
     
-- Use `pull` when you're ready to **update your branch immediately**.
+- Use `pull` when you’re ready to **update your branch immediately**.
 - 
-💡 You'll see `git fetch origin` recommended in several steps below.  
-It's a safe habit that helps avoid conflicts before pushing your changes.
+💡 You’ll see `git fetch origin` recommended in several steps below.  
+It’s a safe habit that helps avoid conflicts before pushing your changes.
 ### 🔄 Keeping Your Fork Updated
 
 💡 Pre-check: Make sure your local `main` branch is tracking your fork (`origin`)
@@ -2167,12 +2117,12 @@ You should see `[origin/main]` next to `main` in the output, like this:
 * main  abc1234 [origin/main] message here...
 ```
 
-If your `main` branch isn't tracking `origin/main`, you probably don't need to fix it. But if push/pull commands aren't working as expected, you can set it manually:
+If your `main` branch isn’t tracking `origin/main`, you probably don’t need to fix it. But if push/pull commands aren’t working as expected, you can set it manually:
 ```bash
 git branch --set-upstream-to=origin/main main
 ```
 
-Stay in sync with the original repository so you don't fall behind!
+Stay in sync with the original repository so you don’t fall behind!
 ```bash
 # Fetch changes from your fork (usually optional, but good to verify)
 git fetch origin
@@ -2190,7 +2140,7 @@ git merge upstream/main
 # Push the updated main branch back to your fork on GitHub
 git push origin main
 ```
-> 🎯 **If these commands succeed**, you'll either see new commits pulled in or a message that everything is already up to date.
+> 🎯 **If these commands succeed**, you’ll either see new commits pulled in or a message that everything is already up to date.
 
 💡 **Why it matters**: Keeping your fork updated helps avoid painful merge conflicts later and ensures your pull requests are based on the latest project state.
 
@@ -2253,7 +2203,7 @@ git branch -vv
   - Request reviews from team members (get some expert eyes on your work)
   
 💡 **What is a pull request?**  
-A pull request (PR) lets you propose changes to a repository — it's like saying, "Here's what I worked on, and I'd like to add it to the main project." It opens a conversation where others can review, discuss, and approve your work before merging it in.
+A pull request (PR) lets you propose changes to a repository — it’s like saying, “Here’s what I worked on, and I’d like to add it to the main project.” It opens a conversation where others can review, discuss, and approve your work before merging it in.
 ### ✨ PR Best Practices
 
   - Write clear, descriptive titles (make it pop!)
@@ -2283,7 +2233,7 @@ Before hitting that "Create pull request" button, run through this quick checkli
 **Before submitting your PR, be sure to check the `CONTRIBUTING.md` file in the repository**.  
 It may include important project-specific guidelines about branch naming, testing, code style, or review expectations.
 
-> 💡 If you don't see one, it's still good practice to follow clear commit messages and keep your PR focused.
+> 💡 If you don’t see one, it’s still good practice to follow clear commit messages and keep your PR focused.
 > 
 ##### 📋 Final Sanity Checks Before Submitting
 
@@ -2317,9 +2267,9 @@ git ls-remote https://github.com/<YOUR-USERNAME>/<REPO-NAME>.git
 
 ### 🔄 Merge Conflicts
 
-Sometimes, when you merge changes from another branch (like `main` or `upstream/main`), Git may not be able to automatically combine everything — especially if the same lines of code were changed in both places. This creates a **merge conflict** that you'll need to resolve manually.
+Sometimes, when you merge changes from another branch (like `main` or `upstream/main`), Git may not be able to automatically combine everything — especially if the same lines of code were changed in both places. This creates a **merge conflict** that you'll need to resolve manually.
 
-Here's how to handle it step by step.
+Here’s how to handle it step by step.
 First make sure your local main is up-to-date with the original repo:
 ```bash
 #Make sure your local main is up to date with the original repo
@@ -2370,15 +2320,15 @@ git reflog
 git checkout -b <branch-name> <commit-hash>
 
 ```
-💡 You usually won't need to recover a branch unless you force-delete (`-D`) or lose unpushed commits after a reset, rebase, or amend. Regular `-d` is safe..
+💡 You usually won’t need to recover a branch unless you force-delete (`-D`) or lose unpushed commits after a reset, rebase, or amend. Regular `-d` is safe..
 
 ## 🎓 Additional Learning Resources
 
-- [Git Documentation](https://git-scm.com/doc) (the Git bible)
-- [GitHub Guides](https://guides.github.com/) (your Git playbook)
-- [Conventional Commits](https://www.conventionalcommits.org/) (the art of commit messages)
-- [GitHub Flow](https://guides.github.com/introduction/flow/) (the way of the Git warrior)
-- [GitHub Skills](https://skills.github.com/) (level up your Git game)
+- [Git Documentation](https://git-scm.com/doc) (the Git bible)
+- [GitHub Guides](https://guides.github.com/) (your Git playbook)
+- [Conventional Commits](https://www.conventionalcommits.org/) (the art of commit messages)
+- [GitHub Flow](https://guides.github.com/introduction/flow/) (the way of the Git warrior)
+- [GitHub Skills](https://skills.github.com/) (level up your Git game)
 
 ---
 
@@ -2386,21 +2336,7 @@ Remember: Git is your friend! 🚀 Happy coding! 💻
 
 
 
-
-
----
-
-### FAQandCommonIssues.md
-
+FAQandCommonIssues.md
 # Frequent Asked Questions 
 
 If you run into an issue, please feel free to submit a PR or Issue and we can add to this doc!
-
-
-
-
-
----
-
-**End of Consolidated Documentation**
-
