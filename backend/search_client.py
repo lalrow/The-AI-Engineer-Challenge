@@ -33,16 +33,25 @@ def search_top_k(query: str, k: int = 4, api_key: str = None) -> List[Document]:
         client=client,
         collection_name=collection_name,
         embedding=embeddings,
+        content_payload_key="content",  # Map Qdrant payload "content" to Document page_content
+        metadata_payload_key="metadata"
     )
     
     # Session 9 retriever chain
     base_retriever = vectorstore.as_retriever(search_kwargs={"k": k})
-    compressor = CohereRerank(model="rerank-v3.5", cohere_api_key=cohere_api_key)
+    
+    # Get base results first
+    base_docs = base_retriever.invoke(query)
+    
+    # Filter out empty documents before reranking
+    filtered_docs = [doc for doc in base_docs if doc.page_content and doc.page_content.strip()]
+    
+    if not filtered_docs:
+        return []
+    
+    # Apply Cohere reranking
+    compressor = CohereRerank(model="rerank-v3.5", cohere_api_key=cohere_api_key, top_n=k)
     time.sleep(20)  # Rate limit protection
     
-    retriever = ContextualCompressionRetriever(
-        base_compressor=compressor,
-        base_retriever=base_retriever,
-    )
-    
-    return retriever.invoke(query)
+    compressed_docs = compressor.compress_documents(filtered_docs, query)
+    return compressed_docs

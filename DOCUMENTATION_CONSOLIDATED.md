@@ -1338,7 +1338,14 @@ Expected: `{"evaluation":{"score":0.9,"feedback":"..."},"sources":[...]}`
 
 **Files Changed**: `api/app.py` (lines 429-449)
 
-**Status**: Fix pending test verification and backend restart.
+**Status**: ✅ VERIFIED (Oct 19, 2025)
+- Qdrant configuration unified (./qdrant_local) across api, backend, loader
+- All tests passing (retrieval similarity ≥ 0.8)
+- Backend using Session 9 retriever with Cohere reranking
+- Frontend evaluation scores consistent with backend tests
+
+**Frontend Integration (Oct 19, 2025 - Final):**
+Fixed parallel flow bug: frontend bypassed `/api/search`, called `/api/evaluate` with empty context. Created `frontend/src/app/api/search/route.ts` proxy. Updated `frontend/src/app/api/diagnostician/route.ts` to retrieve-then-evaluate (Session 9 → context → evaluate). Fixed `backend/search_client.py` with `content_payload_key="content"` and empty doc filtering for Cohere. Unified QDRANT_URL defaults across loader/api/backend. Result: single retrieval flow end-to-end. Note: local file Qdrant works for single requests; concurrent load needs server mode.
 
 
 
