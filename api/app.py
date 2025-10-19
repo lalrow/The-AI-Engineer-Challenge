@@ -424,43 +424,24 @@ async def get_conversations(user_id: str):
 
 # Search endpoint for diagnostician (AIE8 Sessions 6-10 compliant)
 @app.post("/api/search")
-async def search_qdrant(request: SearchRequest):
-    """Search Qdrant collection and return top-k chunks"""
+async def search_query(request: SearchRequest):
+    """Query Qdrant vector database with Session 9 retriever pattern"""
     try:
         if not request.api_key:
             raise HTTPException(status_code=400, detail="Missing api_key")
         
-        from langchain_openai import OpenAIEmbeddings
-        from qdrant_client import QdrantClient
+        # Import and use Session 9 retriever
+        from backend.search_client import search_top_k
         
-        # Initialize Qdrant client (supports url or path only)
-        qdrant_url = os.getenv("QDRANT_URL", "./qdrant_local")
-        if str(qdrant_url).startswith("http"):
-            client = QdrantClient(url=qdrant_url)
-        else:
-            client = QdrantClient(path=qdrant_url)
-        collection_name = os.getenv("COLLECTION_NAME", "science_curriculum_g3_g6")
+        # Call Session 9 retriever (uses Cohere reranking)
+        results = search_top_k(query=request.query, k=request.top_k, api_key=request.api_key)
         
-        # Generate query embedding using langchain-openai
-        embeddings = OpenAIEmbeddings(
-            model="text-embedding-3-small",
-            openai_api_key=request.api_key
-        )
-        query_vector = embeddings.embed_query(request.query)
-        
-        # Search Qdrant collection
-        results = client.search(
-            collection_name=collection_name,
-            query_vector=query_vector,
-            limit=request.top_k
-        )
-        
-        # Format response
+        # Convert List[Document] to response format
         return [{
-            "text": hit.payload.get("content", ""),
-            "score": hit.score,
-            "metadata": hit.payload.get("metadata", {})
-        } for hit in results]
+            "text": doc.page_content,
+            "score": getattr(doc, "metadata", {}).get("score", 1.0),
+            "metadata": getattr(doc, "metadata", {})
+        } for doc in results]
         
     except Exception as e:
         print(f"Search error: {e}")

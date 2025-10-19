@@ -1315,6 +1315,31 @@ Expected: `{"evaluation":{"score":0.9,"feedback":"..."},"sources":[...]}`
   - `frontend/frontend-README.md`
 - Branch `feature/session9-retriever-cohere` created and pushed; documentation and results committed.
 
+#### Critical Issue Discovered & Fixed (Oct 19, 2025 - Late Session)
+
+**Problem**: Grounded answer scoring well in tests (~0.88) but returning negative score (-0.019) in frontend.
+
+**Root Cause**: 
+- `/api/search` endpoint in `api/app.py` was NOT using Session 9 retriever pattern
+- Still using old direct `client.search()` method (lines 430-467)
+- `backend/search_client.py` correctly implemented Session 9 with Cohere reranking
+- Tests passed because they called `/api/search` (old method), but frontend results differed
+
+**Impact**:
+- Frontend retrieved different/mismatched context vs. test expectations
+- Negative cosine similarity indicated context-answer mismatch
+- Session 9 retriever benefits (Cohere reranking) not applied to API endpoint
+
+**Fix Applied**:
+- Updated `/api/search` in `api/app.py` to call `backend.search_client.search_top_k()`
+- Now uses Session 9 retriever chain: `QdrantVectorStore → as_retriever() → CohereRerank → ContextualCompressionRetriever`
+- Converts `List[Document]` to API response format
+- Ensures consistency between tests and frontend
+
+**Files Changed**: `api/app.py` (lines 429-449)
+
+**Status**: Fix pending test verification and backend restart.
+
 
 
 ## SECTION 2: Files Updated or Created Before October 11, 2025
