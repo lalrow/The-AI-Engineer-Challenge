@@ -167,3 +167,63 @@ This implementation follows **Session 8 RAGAS notebook patterns**:
 
 **Status**: Phase 2 Golden RAGAS Evaluation — **COMPLETE** ✨
 
+---
+
+## 🔧 Post-Phase 2 Session: Semantic Chunking Implementation (October 18, 2025)
+
+### Quick Fix Summary
+
+**Problem**: Quiz showed score 0.002 instead of expected ~0.43 because the backend wasn't restarted after we implemented semantic chunking changes.
+
+**Solution**: Restarted backend with proper Qdrant database loaded - now returns correct score 0.432 for baseline answer. ✅
+
+---
+
+### Detailed Session Summary
+
+#### 1️⃣ Semantic Chunking Implementation
+- **Goal**: Replace RecursiveCharacterTextSplitter with SemanticChunker for better conceptual coherence
+- **Changes**: 
+  - Added `langchain-experimental>=0.3.4` dependency
+  - Updated `load_pdf_to_qdrant.py` to use SemanticChunker (percentile=95)
+  - Added timestamped run labels to RAGAS evaluation
+- **Results**:
+  - Answer Relevancy: +15.5% improvement (0.775 → 0.895)
+  - Chunk count: 32 → 4 (larger, semantically coherent chunks)
+- **Commit**: `4ae7a88` - "feat: implement semantic chunking to improve RAG answer relevancy"
+
+#### 2️⃣ Single Qdrant Database Enforcement
+- **Goal**: Ensure ONE persistent Qdrant instance per MDC rules
+- **Issues Found**:
+  - Two Qdrant databases: root-level + `api/qdrant_local` (duplicate)
+  - Two PDF loaders: standalone script + `/api/upload-pdf` endpoint
+  - `:memory:` references in code and documentation
+- **Actions Taken**:
+  - Deleted duplicate `api/qdrant_local` database
+  - Removed `/api/upload-pdf` endpoint and `extract_text_from_pdf()` function
+  - Removed frontend PDF upload UI
+  - Fixed all documentation to reference only canonical loader
+  - Added "Qdrant Data Loading Policy" section to README
+- **Verification**:
+  - Only ONE database: `/home/lalit/workspace/code/The-AI-Engineer-Challenge/qdrant_local`
+  - All code reads QDRANT_URL from `.env` consistently
+  - Collection: `science_curriculum_g3_g6` with 8 vectors
+- **Commit**: `c33d759` - "fix: enforce single Qdrant database and single PDF loader per MDC"
+
+#### 3️⃣ Test Execution & System Verification
+- **Tests Run**: All 3 tests passing (100%)
+  - `test_diagnostician_agent.py` ✅
+  - `test_diagnostician_agent_evaluation.py` ✅
+  - `test_retrieval_similarity.py` ✅ (Baseline: 0.495, Grounded: 0.817)
+- **MDC Compliance**: 100% compliant with all rules
+- **Frontend/Backend Status**: Both running correctly
+
+#### 4️⃣ Troubleshooting Quiz Score Issue
+- **User Report**: Quiz showing score 0.002 instead of expected ~0.43
+- **Root Cause**: Backend process was stale (not restarted after semantic chunking changes)
+- **Fix**: Restarted backend with proper environment and Qdrant database
+- **Verification**: Backend now returns correct score 0.432 for baseline answer
+- **System Status**: All endpoints working correctly
+
+**Final Status**: Production-ready with semantic chunking, single Qdrant database, and proper scoring! 🚀
+

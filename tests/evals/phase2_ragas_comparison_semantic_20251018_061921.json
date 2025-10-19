@@ -1,0 +1,26 @@
+[
+  {
+    "Metric":"faithfulness",
+    "Baseline":"0.950",
+    "Grounded":"0.900",
+    "\u0394 (Improvement)":"-0.050"
+  },
+  {
+    "Metric":"context_recall",
+    "Baseline":"0.883",
+    "Grounded":"0.883",
+    "\u0394 (Improvement)":"+0.000"
+  },
+  {
+    "Metric":"context_precision",
+    "Baseline":"1.000",
+    "Grounded":"1.000",
+    "\u0394 (Improvement)":"+0.000"
+  },
+  {
+    "Metric":"answer_relevancy",
+    "Baseline":"0.775",
+    "Grounded":"0.895",
+    "\u0394 (Improvement)":"+0.120"
+  }
+]
