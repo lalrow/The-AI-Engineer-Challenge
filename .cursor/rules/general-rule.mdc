@@ -26,4 +26,5 @@ alwaysApply: true
 - You must always run all tests using uv run pytest -v. If there are more than 20 test files, Cursor must ask:
 “There are more than 20 test files. Do you want to run all, or just key suites (retrieval, evaluation, diagnoser)?”
 - You must always summarize test results clearly after execution, showing passed, failed, and suggested next steps (rerun suite, fix env, reload PDFs).
+- You must never create a parallel implementation path (e.g., adding a new retriever, API route, or service function) without first asking if it should replace or integrate with the existing one. Always maintain a single, unified flow—for example, after adding the Cohere Rerank retriever, immediately remove or refactor the old client.search() path in /api/search to prevent scoring mismatches between frontend and backend.
 

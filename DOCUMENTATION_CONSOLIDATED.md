@@ -1199,7 +1199,7 @@ See [the docs](https://docs.pytest.org/en/stable/how-to/cache.html) for more inf
 Changes:
 
 - Replace `chunk_text()` with LangChain's `RecursiveCharacterTextSplitter(chunk_size=600, chunk_overlap=100)`
-- Add environment variables: `QDRANT_URL` (defaults to `:memory:`), `COLLECTION_NAME` (defaults to `science_curriculum_g3_g6`)
+- Add environment variables: `QDRANT_URL` (defaults to `./qdrant_local`), `COLLECTION_NAME` (defaults to `science_curriculum_g3_g6`)
 - Update metadata to include `{"topic": "pollination", "grade": 3, "strand": "life systems"}`
 - Print total chunks inserted with collection name
 
