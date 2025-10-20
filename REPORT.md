@@ -30,9 +30,12 @@ Two cooperating agents form the foundation:
 2️⃣ **Longitudinal Progress Narrator Agent** — summarizes chat + quiz logs into a *3-sentence progress note + Home Tip* (*reflective reasoning*).  
 
 > **Agentic reasoning:**  
-> • Diagnostician → *planning* next question or hint based on error pattern.  
-> • Narrator → *reflection* across sessions to produce personalized, tone-controlled reports.  
-> Together they deliver adaptive, curriculum-aligned, empathetic feedback.  
+> • **Diagnostician** → *planning* the next question or hint based on the student’s error pattern.  
+> • **Narrator** → *reflection* across sessions to produce personalized, tone-controlled reports.  
+> • When the Narrator needs to refine tone or phrasing, it can optionally **query Tavily Search** to observe authentic teacher feedback styles or classroom communication patterns from the web.  
+>  
+> Together, these reasoning modes deliver adaptive, curriculum-aligned, and empathetic feedback that mirrors how real teachers guide student growth.
+
 
 **Stack Overview**
 
