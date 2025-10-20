@@ -52,49 +52,58 @@ Two cooperating agents form the foundation:
 
 ---
 
-## 🟢 Task 3 — Dealing with the Data  
+## 🧩 Task 3 — Dealing with the Data  
 
-### 3a — Data Sources & External APIs  
+> **Rubric Question 1:**  
+> *Describe all of your data sources and external APIs, and describe what you’ll use them for.*  
 
-**Answering rubric question:**  
-> “Describe all of your data sources and external APIs, and describe what you’ll use them for.”  
+> **Rubric Question 2:**  
+> *Describe the default chunking strategy that you will use. Why did you make this decision?*  
 
-#### 📘 Data Sources  
-- **Ontario Science Curriculum PDFs**  
-   • e.g., `public/pdfs/grade3/1758568139925_Bees_and_Pollination.pdf`  
-   • Used to generate the retrieval knowledge base (embedded into Qdrant).  
-   • Forms ground-truth content for diagnostic questions and RAGAS evaluation.  
-- **Student Interaction Logs**  
-   • Captured during quizzes (question, answer, feedback). Used by the Narrator Agent to track longitudinal progress.  
-
-#### 🌐 External APIs  
-| API | Purpose | Why It’s Needed |
-|:--|:--|:--|
-| **OpenAI API** | Embeddings + reasoning (`text-embedding-3-small`, `gpt-4-mini`) | Generates semantic representations and teacher-style feedback. |
-| **Cohere Rerank API** | Re-orders retrieved chunks by contextual relevance | Improves retrieval quality for curriculum-aligned answers. |
-| **LangSmith API (optional)** | Evaluation and trace logging | Monitors and analyzes RAG pipeline performance. |
-
-**Internal components (not counted as external):** Qdrant (local persistent store), FastAPI backend, Next.js frontend.  
+> **Rubric Question 3 (Optional):**  
+> *Will you need specific data for any other part of your application? If so, explain.*  
 
 ---
 
-### 3b — Chunking Strategy 🧱  
+### **3a — Data Sources & External APIs**
 
-**Answering rubric question:**  
-> “Describe the default chunking strategy that you will use. Why did you make this decision?”  
+| Component | Source / API | Purpose | Integration |
+|:--|:--|:--|:--|
+| **Primary RAG Data** | Ontario Science & Technology PDFs (Grades 3-6) — *Bees and Pollination*, *Water Cycle*, *Ecosystems* | Core reference corpus for the Diagnostician Agent. Each PDF contains curriculum-aligned lessons and examples that the agent retrieves to ground its feedback. | Loaded via `load_pdf_to_qdrant.py` into a persistent Qdrant collection (`science_curriculum_g3_g6`). |
+| **External API Tool** | **Tavily Search API** | Acts as a web-search fallback if Qdrant retrieval fails or lacks coverage (for example, new Ontario curriculum updates or pollination examples not in PDFs). Registered but not actively invoked — available for future agentic expansion. | Imported via `langchain_tavily.TavilySearch(max_results=5)` and bound to the LangGraph model with `ChatOpenAI.bind_tools([retriever_tool, tavily_tool])`. |
 
-We use **semantic chunking** (split by meaning boundaries like headings and concept shifts) to preserve each complete teaching unit.  
+**Internal components (not counted as external):** Qdrant vector database, FastAPI backend, Next.js frontend.
+
+---
+
+### **3b — Chunking Strategy 🧱**
+
+We use the **SemanticChunker** from `langchain_experimental.text_splitter` with  
+a **percentile breakpoint threshold of 95**, which groups text by **conceptual coherence** rather than fixed character limits.  
+This preserves complete ideas and teaching segments instead of slicing through them mid-topic.
+
 Science examples (*Bees & Pollination*, *Water Cycle*, *Ecosystems*) show that contextual continuity is key to accurate retrieval.  
 Semantic chunking raised **faithfulness**, **context recall**, and **answer relevancy** in RAGAS tests.  
 
+For instance, in the *Bees and Pollination* PDF, each paragraph forms a self-contained learning unit — such as *how pollen moves*, *role of insects*, or *importance for food production*.  
+By letting the model detect these natural boundaries, the retriever stores meaningful segments that lead to higher-quality context during evaluation.  
+The script implementing this (`load_pdf_to_qdrant.py`) embeds each semantic chunk with `text-embedding-3-small` before upserting into Qdrant.
+
 ---
 
-### 3c — Optional Data Needs  
+### **3c — Optional Data Needs**
 
-**Answering rubric question:**  
-> “[Optional] Will you need specific data for any other part of your application? If so, explain.”  
+Future versions will aggregate ≈ 20 diagnostic sessions per student to build a **longitudinal progress summary**, tracking concept mastery and growth over time.  
+These summaries will feed into a dashboard for parents and teachers to visualize learning progress and strengthen the feedback loop between tutor and student.  
 
-Yes — future iterations will aggregate 20 diagnostic sessions per student to generate a **longitudinal progress summary** and visualize it in a dashboard.  
+---
+
+✅ **Summary:**  
+- **RAG Data:** Ontario curriculum PDFs stored in Qdrant  
+- **External API:** Tavily Search (fallback available in LangGraph tool-belt)  
+- **Chunking:** SemanticChunker (p95) for conceptual coherence — tested on *Bees & Pollination*  
+- **Future Data:** Student progress records for longitudinal insights  
+
 
 ---
 
