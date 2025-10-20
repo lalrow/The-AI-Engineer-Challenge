@@ -25,6 +25,7 @@ dependencies = [
     "datasets>=2.0.0",
     "langchain-cohere>=0.4.6",
     "langchain-qdrant>=0.2.1",
+    "tavily-python>=0.7.12",
 ]
 
 [project.optional-dependencies]

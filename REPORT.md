@@ -48,7 +48,8 @@ Two cooperating agents form the foundation:
 | 8 | **(Optional) Serving & Inference** | **Localhost** | Simple local hosting for demo; compatible with Dockerized pipelines. | ☁️ Deploy on **Vercel + Railway** with CI/CD for continuous updates. |
 
 **Flow Diagram:**  
-`![Flow Diagram](./docs/Figma_4_boxes.png)`  
+
+
 
 ---
 
@@ -106,6 +107,66 @@ These summaries will feed into a dashboard for parents and teachers to visualize
 
 
 ---
+
+```mermaid
+%%{init: {
+  'theme': 'base',
+  'themeVariables': { 
+    'fontSize':'2000px', 
+    'fontFamily': 'arial',
+    'padding':'1200px',
+    'primaryColor':'#FFFFFF',
+    'primaryBorderColor':'#FF0000',
+    'primaryTextColor':'#000000',
+    'lineColor':'#FF0000',
+    'arrowheadColor':'#FF0000'
+  },
+  'flowchart': { 
+    'nodeSpacing': 4000, 
+    'rankSpacing': 4000,
+    'padding': 1200,
+    'curve': 'linear'
+  }
+}}%%
+flowchart LR
+    A1["① CLICK SUBMIT<br/>IN QUIZ UI"]
+    A2["② FRONTEND POSTS<br/>TO DIAGNOSTICIAN"]
+    A3["③ NEXT.JS CALLS<br/>FASTAPI SEARCH"]
+    
+    B1["④ FASTAPI SEARCH<br/>INVOKES RETRIEVER"]
+    B2["⑤ COHERE RERANKS<br/>RETURNS TOP-K"]
+    B3["⑥ NEXT.JS BUILDS<br/>CONTEXT STRING"]
+    
+    C1["⑦ NEXT.JS POSTS<br/>TO EVALUATE"]
+    C2["⑧ AGENT RUNS<br/>RETRIEVE + DIAGNOSE"]
+    C3["⑨ FRONTEND SHOWS<br/>FEEDBACK"]
+
+    A1 -->|→→→| A2 -->|→→→| A3
+    
+    A1 -->|⬇⬇⬇| B1
+    A2 -->|⬇⬇⬇| B2
+    A3 -->|⬇⬇⬇| B3
+    
+    B1 -->|→→→| B2 -->|→→→| B3
+    
+    B1 -->|⬇⬇⬇| C1
+    B2 -->|⬇⬇⬇| C2
+    B3 -->|⬇⬇⬇| C3
+    
+    C1 -->|→→→| C2 -->|→→→| C3
+
+    style A1 fill:#FFFFFF,stroke:#FF0000,stroke-width:200px,color:#000000,font-size:1900px,padding:800px
+    style A2 fill:#FFFFFF,stroke:#FF0000,stroke-width:200px,color:#000000,font-size:1900px,padding:800px
+    style A3 fill:#FFFFFF,stroke:#FF0000,stroke-width:200px,color:#000000,font-size:1900px,padding:800px
+    
+    style B1 fill:#FFFFFF,stroke:#FF0000,stroke-width:200px,color:#000000,font-size:1900px,padding:800px
+    style B2 fill:#FFFFFF,stroke:#FF0000,stroke-width:200px,color:#000000,font-size:1900px,padding:800px
+    style B3 fill:#FFFFFF,stroke:#FF0000,stroke-width:200px,color:#000000,font-size:1900px,padding:800px
+    
+    style C1 fill:#FFFFFF,stroke:#FF0000,stroke-width:200px,color:#000000,font-size:1900px,padding:800px
+    style C2 fill:#FFFFFF,stroke:#FF0000,stroke-width:200px,color:#000000,font-size:1900px,padding:800px
+    style C3 fill:#FFFFFF,stroke:#FF0000,stroke-width:200px,color:#000000,font-size:1900px,padding:800px
+```
 
 ## 🟢 Task 4 — Building a Quick End-to-End Prototype  
 

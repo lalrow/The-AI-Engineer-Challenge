@@ -1,10 +1,17 @@
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langgraph.graph import StateGraph, END
 from langgraph.checkpoint.memory import MemorySaver
+from langchain_core.tools import tool
 import os
 import json
 import numpy as np
 from backend.search_client import search_top_k
+
+@tool
+def retriever_tool(query: str, api_key: str) -> str:
+    """Retrieve relevant context from Qdrant vector database for science curriculum questions."""
+    docs = search_top_k(query, k=4, api_key=api_key)
+    return "\n\n".join([d.page_content for d in docs])
 
 def retrieve_context(state):
     """Retrieve top-k relevant text from Qdrant (R step of RAG)."""
@@ -12,9 +19,16 @@ def retrieve_context(state):
         return state
     try:
         docs = search_top_k(state["question"], k=4, api_key=state.get("api_key"))
-        state["context"] = "\n\n".join([d.page_content for d in docs])
+        context = "\n\n".join([d.page_content for d in docs])
+        
+        # Future-proof: signal if retrieval fails
+        if not context or context.strip() == "":
+            state["context"] = "Qdrant retrieval returned empty. Tavily available for fallback."
+        else:
+            state["context"] = context
+            
     except Exception as e:
-        state["context"] = f"Error retrieving context: {e}"
+        state["context"] = f"Error retrieving context: {e}. Tavily fallback available."
     return state
 
 
@@ -92,6 +106,23 @@ Provide qualitative feedback in this JSON structure (no markdown):
 
 
 def build_graph_with_api_key(api_key: str):
+    # --- Tool Belt: Qdrant Retriever + Tavily Fallback ---
+    from langchain_community.tools.tavily_search import TavilySearchResults
+    
+    tavily_tool = TavilySearchResults(
+        max_results=5,
+        api_key=os.getenv("TAVILY_API_KEY")
+    )
+    tool_belt = [retriever_tool, tavily_tool]
+    
+    # Bind tools to model (makes them available for future use)
+    model_with_tools = ChatOpenAI(
+        model="gpt-4.1-mini", 
+        temperature=0,
+        api_key=api_key
+    ).bind_tools(tool_belt)
+    
+    # Continue with existing graph definition...
     graph = StateGraph(dict)
     graph.add_node("retrieve_context", retrieve_context)
     graph.add_node("diagnose", diagnose_node)
