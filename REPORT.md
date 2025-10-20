@@ -84,7 +84,7 @@ a **percentile breakpoint threshold of 95**, which groups text by **conceptual c
 This preserves complete ideas and teaching segments instead of slicing through them mid-topic.
 
 Science examples (*Bees & Pollination*, *Water Cycle*, *Ecosystems*) show that contextual continuity is key to accurate retrieval.  
-Semantic chunking raised **faithfulness**, **context recall**, and **answer relevancy** in RAGAS tests.  
+Semantic chunking improved context coherence, which indirectly increased **faithfulness**, **context recall**, and **answer relevancy** in RAGAS tests.  
 
 For instance, in the *Bees and Pollination* PDF, each paragraph forms a self-contained learning unit — such as *how pollen moves*, *role of insects*, or *importance for food production*.  
 By letting the model detect these natural boundaries, the retriever stores meaningful segments that lead to higher-quality context during evaluation.  
@@ -114,7 +114,7 @@ flowchart TD
     A1["① Frontend – Quiz Submit Button"]
     A2["② Next.js API Route – /api/diagnostician"]
     A3["③ FastAPI Endpoint – /api/search"]
-    A4["④ Retriever – Qdrant + Semantic Chunker"]
+    A4["④ Retriever - Qdrant + Semantic Chunker"]
     A5["⑤ FastAPI Endpoint – /api/evaluate"]
     A6["⑥ Agent Graph Builder – build_graph_with_api_key()"]
     A7["⑦ Agent Node 1 – Retrieve Context"]
@@ -130,7 +130,7 @@ flowchart TD
 > “Build an end-to-end prototype and deploy to local host with a front end (Vercel deployment not required).”  
 
 ✅ Completed prototype includes FastAPI backend, Next.js frontend, and Qdrant vector store integration.  
-✅ Tested locally with OpenAI API and Cohere Reranker enabled.  
+✅ Tested locally with OpenAI API and Cohere Reranker integrated into the backend pipeline.  
 
 **Run Commands**
 
@@ -138,40 +138,70 @@ flowchart TD
 
 ---
 
-## 🟢 Task 5 — Baseline Evaluation (Initial Semantic Retriever)
+## 🟢 Task 5 — Baseline Evaluation (Initial Retriever with Semantic Chunking)
 
 **Answering rubric question:**  
 > “Assess your pipeline using the RAGAS framework including key metrics faithfulness, response relevancy, context precision, and context recall. Provide a table of your output results.”  
 > “What conclusions can you draw about the performance and effectiveness of your pipeline with this information?”
 
-### 📁 Source  
-Baseline metrics file:  
-`./tests/evals/baseline_ragas_results_semantic_20251018_061921.json`  
+---
 
-### 🔍 Detailed Observation by Question — Baseline (Semantic Retriever)
+### 📁 Evaluation Sources
 
-| Example Question | Faithfulness | Context Recall | Context Precision | Answer Relevancy | Observation |
-|:--|:--:|:--:|:--:|:--:|:--|
-| **1️⃣ Why is pollination important for humans?** | 0.50 | 1.00 | 1.00 | **0.70** | Weakest answer — short, misses examples and the “one out of every three bites of food” detail. |
-| **2️⃣ What would happen without pollinators?** | 1.00 | 1.00 | 1.00 | **0.00** | Major gap — correct theme but incomplete; failed to connect pollinators to human food impact. |
-| **3️⃣ How does pollen stick to a bee?** | 1.00 | 0.67 | 1.00 | **0.79** | Partially complete — explains mechanism but lacks sensory analogy (“like dust on a sweater”). |
-| **4️⃣ How can people help bees?** | 1.00 | 1.00 | 1.00 | **0.72** | Solid factual coverage but too short; omits variety of actions like leaving wild patches. |
-| **5️⃣ How do bees make honey?** | 1.00 | 1.00 | 1.00 | **1.00** | Strongest case — complete, clear, faithful to curriculum; ideal reference alignment. |
+Before introducing semantic chunking, an initial **naïve retriever** was tested to establish a pre-baseline reference.  
+The **Retriever with semantic chunking ON** (used from this point onward) represents the **Baseline Retriever** for all comparisons.
+
+- **Pre-Baseline File (Chunking OFF):** `./tests/evals/baseline_ragas_results.json`  
+- **Baseline File (Chunking ON):** `./tests/evals/baseline_ragas_results_semantic_20251018_061921.json`
+
+Semantic chunking reorganized text by meaning boundaries — for example, keeping “pollen → seed → fruit” or “evaporation → condensation → precipitation” together as complete teaching units.  
+This improved retrieval focus without fragmenting scientific concepts.
 
 ---
 
-### 🧠 Summary of Baseline Semantic Retriever
+## 🟢 Task 5 — Baseline Evaluation (Initial Retriever with Semantic Chunking ON)
 
-- **Faithfulness:** Consistently high (most answers = 1.0) — no hallucination or off-topic facts.  
-- **Context Precision:** Perfect (≈ 1.0) — retriever selects focused, noise-free chunks.  
-- **Context Recall:** Slightly variable (0.5–1.0) — some partial context retrieval on multi-fact questions.  
-- **Answer Relevancy:** Uneven (0.0 → 1.0) — drops sharply on concept-heavy or multi-sentence answers requiring examples.  
+**Answering rubric question:**  
+> “Assess your pipeline using the RAGAS framework including key metrics faithfulness, response relevancy, context precision, and context recall. Provide a table of your output results.”  
+> “What conclusions can you draw about the performance and effectiveness of your pipeline with this information?”
+
+---
+
+### 📁 Evaluation Source
+
+Baseline metrics file:  
+`./tests/evals/baseline_ragas_results_semantic_20251018_061921.json`
+
+Before this version, a **naïve retriever (no semantic chunking)** was tested to validate the retrieval workflow and embedding behavior.  
+Although overall factual accuracy remained consistent, the addition of **semantic chunking ON** slightly improved *answer relevancy* by maintaining conceptual boundaries within each chunk (e.g., “pollen → seed → fruit” or “evaporation → condensation → precipitation”).  
+From this point onward, the **retriever with semantic chunking ON** is treated as the official **Baseline Retriever** for all evaluations.
+
+---
+
+### 🔍 Detailed Observation by Question — Baseline Retriever
+
+| Example Question | Faithfulness | Context Recall | Context Precision | Answer Relevancy | Observation |
+|:--|:--:|:--:|:--:|:--:|:--|
+| **1️⃣ Why is pollination important for humans?** | 0.50 | 1.00 | 1.00 | **0.70** | Short and incomplete — misses examples like “one out of every three bites of food.” |
+| **2️⃣ What would happen without pollinators?** | 1.00 | 1.00 | 1.00 | **0.00** | Correct theme but lacks connection to food systems or human impact. |
+| **3️⃣ How does pollen stick to a bee?** | 1.00 | 0.67 | 1.00 | **0.79** | Explains mechanism but omits sensory analogy (“like dust on a sweater”). |
+| **4️⃣ How can people help bees?** | 1.00 | 1.00 | 1.00 | **0.72** | Accurate but too brief — missing variety in actions like planting wildflowers or bee hotels. |
+| **5️⃣ How do bees make honey?** | 1.00 | 1.00 | 1.00 | **1.00** | Excellent — faithful and complete, matching curriculum reference perfectly. |
+
+---
+
+### 🧠 Summary of Baseline Retriever (with Semantic Chunking ON)
+
+- **Faithfulness:** Consistently high (≈ 1.0) — no hallucinations or off-topic information.  
+- **Context Precision:** Perfect (≈ 1.0) — retrieval produces clean, noise-free context.  
+- **Context Recall:** Slightly variable (0.5 – 1.0) — some partial retrieval on multi-fact questions.  
+- **Answer Relevancy:** Uneven (0.0 → 1.0) — strong for factual questions but weaker for conceptual ones requiring examples.  
 
 📌 **Interpretation:**  
-The Semantic Retriever produces accurate but occasionally underdeveloped answers.  
-Its weakness lies in *context prioritization* — it retrieves correct but minimal chunks, causing short, less instructive responses for complex science questions.  
-This pattern sets a clear baseline for showing how the **Reranker** improves depth and conceptual completeness.
-
+The retriever with semantic chunking ON provides accurate, curriculum-grounded answers but sometimes lacks explanatory depth.  
+The improvement from naïve to semantic chunking ON primarily lies in **better answer relevancy**, as chunk boundaries now align more closely with educational concepts.  
+However, context prioritization remains a limitation — correct chunks are retrieved but not always ordered by instructional value.  
+This establishes a solid baseline for Task 7, where the **Cohere Reranker** improves conceptual completeness and pedagogical richness.
 
 ---
 
@@ -186,8 +216,8 @@ This pattern sets a clear baseline for showing how the **Reranker** improves dep
 
 ### 🔍 Retrieval Techniques Evaluated and Planned
 
-The base **Semantic Retriever** (OpenAI embeddings + Qdrant) was enhanced with the **Cohere Reranker**, which re-orders the top-k retrieved chunks by contextual similarity to the query.  
-**For this first phase, we swapped the base Semantic Retriever with the Cohere Reranker**, enabling smarter reordering of context chunks and measurable gains in answer quality without any loss in recall or precision.  
+The base ** Retriever** (OpenAI embeddings + Qdrant) was enhanced with the **Cohere Reranker**, which re-orders the top-k retrieved chunks by contextual similarity to the query.  
+**For this first phase, we swapped the base Base Retriever with the Cohere Reranker**, enabling smarter reordering of context chunks and measurable gains in answer quality without any loss in recall or precision.  
 This yielded improvements in **faithfulness (+0.05)** and **answer relevancy (+0.12)**, confirming that re-ranking helps the model attend first to conceptually rich, example-based text — ideal for educational explanations.
 
 
@@ -200,7 +230,6 @@ It preserves paragraph context around each chunk and may improve coherence for m
 In the next iteration, the app will **combine semantic, reranked, and parent-doc strategies** dynamically — selecting the retrieval mode based on question type (definition vs. explanation) — to further improve alignment with Ontario Science learning goals.
 
 
-
 ---
 
 ## 🟢 Task 7 — Assessing Performance & Future Work 🗺️
@@ -210,7 +239,7 @@ In the next iteration, the app will **combine semantic, reranked, and parent-doc
 > “Articulate the changes that you expect to make to your app in the second half of the course. How will you improve your application?”  
 
 
-### 🔍 Detailed Observation by Question — Advanced (Semantic + Reranker)
+### 🔍 Detailed Observation by Question — Advanced (Semantic Chunking + Reranker)
 
 | Example Question | Faithfulness | Context Recall | Context Precision | Answer Relevancy | Observation |
 |:--|:--:|:--:|:--:|:--:|:--|
