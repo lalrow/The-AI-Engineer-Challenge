@@ -303,15 +303,15 @@ The improvement demonstrates that reranking didn’t increase recall or precisio
 
 ---
 
-## 🟢 Final Submission Checklist ✅
+## 📦 Certification Deliverables Summary
 
 | Item | Deliverable | Status |
 |:--|:--|:--:|
-| 1 | 5-minute loom demo (showing use case + workflow) - Link below | ✅ Complete |
-    https://www.loom.com/share/52da540cad894aa4b695933442aba6db
-| 2 | Written document answering each rubric question | ✅ Complete |
-| 3 | All relevant code in GitHub repo | ✅ Complete |
-| 4 | Persistent Qdrant + API integration verified | ✅ Complete |
+| 1 | 🎥 **5-minute Loom Demo** — showing use case, workflow, and live evaluation  <br>🔗 [Watch Demo on Loom](https://www.loom.com/share/52da540cad894aa4b695933442aba6db) | ✅ Complete |
+| 2 | 🧾 **Written Document** — detailed answers for each rubric question | ✅ Complete |
+| 3 | 💻 **GitHub Repository** — all core project files, tests, and evaluation scripts | ✅ Complete |
+| 4 | 🧠 **Persistent Qdrant + API Integration** — verified and tested with consistent retrieval | ✅ Complete |
+
 
 ---
 
