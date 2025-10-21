@@ -307,7 +307,8 @@ The improvement demonstrates that reranking didn’t increase recall or precisio
 
 | Item | Deliverable | Status |
 |:--|:--|:--:|
-| 1 | 5-minute loom demo (showing use case + workflow) | 🔜 Pending |
+| 1 | 5-minute loom demo (showing use case + workflow) - Link below | ✅ Complete |
+    https://www.loom.com/share/52da540cad894aa4b695933442aba6db
 | 2 | Written document answering each rubric question | ✅ Complete |
 | 3 | All relevant code in GitHub repo | ✅ Complete |
 | 4 | Persistent Qdrant + API integration verified | ✅ Complete |
